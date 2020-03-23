@@ -50,7 +50,7 @@ class Simulation(simpy.Environment):
         self.free_res = Resources(self)
         self.all_res = {}
 
-        self.__status__ = None
+        self.__status__ = status
 
         self.global_mutex = Simulation.Mutex(self)
 

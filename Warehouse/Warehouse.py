@@ -1,5 +1,6 @@
 import math
 
+import SimMain.Strategy
 from IdeaSim.Simulation import Simulation
 from Resources import Bay
 from Resources.Channel import Channel
@@ -21,7 +22,7 @@ class Warehouse:
         #        self.resources = Resources(sim)
         # all res
         self.all_resources = []
-        self.sim.manager.add_mapping("new_task", lambda x: print("need to call strategy"))
+        self.sim.manager.add_mapping("new_task", SimMain.Strategy.Strategy.strategy)
         TaskDispatcher(sim, trace)
 
         lifts = []

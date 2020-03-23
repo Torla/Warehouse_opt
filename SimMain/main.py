@@ -14,7 +14,7 @@ from Warehouse.Warehouse import Warehouse
 class Test:
     @staticmethod
     def test(parameter, trace_parameter):
-        sim = Simulation()
+        sim = Simulation(parameter)
         # env = simpy.RealtimeEnvironment(0, 0.1, False)
         Logger.enable(False)
         Logger.set_env(sim)
@@ -39,6 +39,6 @@ if __name__ == '__main__':
                               Cr=0.02, Fr=1.15, rendiment=0.9,
                               Nli=1, Nsh=5, Nsa=1,
                               bay_level=1.5,
-                              tech=2, strat=0)
+                              tech=0, strat=0)
     t_par = TraceParameter(sim_time=10000, type_num=4, int_mean=500, num_mean=5, mean_present=50, seed=[35, 64])
     Test.test(parameter=par, trace_parameter=t_par)
