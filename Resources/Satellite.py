@@ -1,16 +1,15 @@
 from overrides import overrides
 
-from Manager.Action import ActionType
-from Order.Item import Item
+from Task import Item
 from Resources.Movement import MovableResource, Position
-from Resources.Performer import Performer
+from IdeaSim.Resources import Performer
 from SimMain.Logger import Logger
 
 
 class Satellite(MovableResource, Performer):
     def __init__(self, env, position, acc, max_v, par):
-        MovableResource.__init__(self, position, acc, max_v, par)
-        Performer.__init__(self, env, self.id)
+        MovableResource.__init__(self, env, position, acc, max_v, par)
+        Performer.__init__(self, env)
         self.env = env
         self.TIME_TO_DROP_TO_CHANNEL = 10
         self.TIME_TO_PICKUP_FROM_CHANNEL = 10

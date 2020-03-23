@@ -1,17 +1,14 @@
 from overrides import overrides
 
-from Resources.Resources import Resource
 from Resources.Movement import MovableResource, Position
-from Resources.Performer import Performer
-from Manager.Action import ActionType
+from IdeaSim.Resources import Performer
 from Resources.Shuttle import Shuttle
-from SimMain.Logger import Logger
 
 
 class Lift(MovableResource, Performer):
     def __init__(self, env, position, acc, max_v, par):
-        MovableResource.__init__(self, position, acc, max_v, par)
-        Performer.__init__(self, env, self.id)
+        MovableResource.__init__(self, env, position, acc, max_v, par)
+        Performer.__init__(self, env)
         self.env = env
         self.TIME_TO_DROP = 10
         self.TIME_TO_PICKUP = 10

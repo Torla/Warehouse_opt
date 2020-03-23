@@ -1,8 +1,9 @@
 import math
 from overrides import overrides
 
-import Resources.EnergyModel
-from Resources.Resources import Resource
+import Resources
+from IdeaSim.Resources import Resource
+from Resources import EnergyModel
 from SimMain.Logger import Logger
 from SimMain.SimulationParameter import SimulationParameter
 import numpy as np
@@ -20,8 +21,8 @@ class Position:
 
 
 class MovableResource(Resource):
-    def __init__(self, position, acc, max_v, par):
-        super().__init__(position, par)
+    def __init__(self, sim, position, acc, max_v, par):
+        super().__init__(sim)
         self.max_v = max_v
         self.acc = acc
         self.content = None
@@ -39,7 +40,7 @@ class MovableResource(Resource):
         else:
             time = math.sqrt(d / self.acc)
 
-        energy_consumed = Resources.EnergyModel.energy(self.position, position, parameter, self.__weight__())
+        energy_consumed = EnergyModel.energy(self.position, position, parameter, self.__weight__())
         self.energyConsumed += energy_consumed
 
         Logger.log(
@@ -49,7 +50,7 @@ class MovableResource(Resource):
                 position) + ")",
             20)
 
-        self.position = Position(position.section, position.level, position.x, position.z)
+        self.position = Resources.Movement.Position(position.section, position.level, position.x, position.z)
 
         if self.content is not None and isinstance(self.content, MovableResource):
             self.content.__drag__(position)

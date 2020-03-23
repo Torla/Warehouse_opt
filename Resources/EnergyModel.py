@@ -1,16 +1,16 @@
 import math
 
-from Resources.Movement import Position, distance
+from Resources import Movement
 from SimMain.SimulationParameter import SimulationParameter
 
 
 def energy(pos1, pos2, par, weight) -> float:
-    assert isinstance(pos1, Position)
-    assert isinstance(pos2, Position)
+    assert isinstance(pos1, Movement.Position)
+    assert isinstance(pos2, Movement.Position)
     assert isinstance(par, SimulationParameter)
     ret = 0
     g = 9.81
-    d = distance(pos1, pos2, par)
+    d = Movement.distance(pos1, pos2, par)
     #lift
     if pos1.level != pos2.level:
         d_lim = (par.Ay * math.pow(par.Vy / par.Ay, 2))

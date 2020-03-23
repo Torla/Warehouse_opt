@@ -2,7 +2,7 @@ from enum import Enum
 
 from overrides import overrides
 from simpy import Store
-from Resources.Resources import Resource
+from IdeaSim.Resources import Resource
 from Resources.Lift import Lift
 
 
@@ -18,14 +18,15 @@ class LifoStore(Store):
             raise Exception("exciting capacity")
 
 
-class Channel(LifoStore, Resource, ):
+class Channel(LifoStore, Resource):
     class Orientations(Enum):
         LEFT = 0
         RIGHT = 1
 
-    def __init__(self, env, capacity, lift, position, orientation, par):
+    def __init__(self, env, capacity, lift, position, orientation):
         Store.__init__(self, env, capacity)
-        Resource.__init__(self, position, par)
+        Resource.__init__(self, env)
+        self.position = position
         self.lift = lift
         self.orientation = orientation
         assert isinstance(lift, Lift)
