@@ -11,6 +11,7 @@ class Satellite(MovableResource, Performer):
         MovableResource.__init__(self, env, position, acc, max_v, par)
         Performer.__init__(self, env)
         self.env = env
+        self.position = position
         self.TIME_TO_DROP_TO_CHANNEL = 10
         self.TIME_TO_PICKUP_FROM_CHANNEL = 10
         self.TIME_TO_DROP_TO_BAY = 10

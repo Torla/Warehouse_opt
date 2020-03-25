@@ -29,7 +29,7 @@ class MovableResource(Resource):
         self.energyConsumed = 0
         self.weight = 0
 
-    def move(self, position, parameter) -> int:
+    def move(self, sim, position, parameter) -> int:
         d = distance(self.position, position, parameter)
 
         acc_time = self.max_v / self.acc
@@ -43,7 +43,7 @@ class MovableResource(Resource):
         energy_consumed = EnergyModel.energy(self.position, position, parameter, self.__weight__())
         self.energyConsumed += energy_consumed
 
-        Logger.log(
+        sim.logger.log(
             str(self) + " move " + str(d) + "m in " + str(time) + "s w:" + str(self.__weight__()) + "Kg E:" + str(
                 energy_consumed / 1000) + "KW/h (" + str(
                 self.position) + ")->(" + str(

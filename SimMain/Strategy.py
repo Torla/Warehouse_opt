@@ -1,5 +1,5 @@
 from IdeaSim.Event import Event
-from IdeaSim.Actions import ActionsGraph, Action
+from IdeaSim.Actions import ActionsGraph, Action, Block, Free
 from IdeaSim.Resources import Resources
 from Resources.ActionType import ActionType
 from Resources.Bay import Bay
@@ -39,7 +39,7 @@ class Strategy:
     @staticmethod
     def strategy(event) -> ActionsGraph:
         assert isinstance(event, Event)
-        parameter = event.sim.get_status()
+        parameter = event.sim.get_status().parameter
         try:
             selection = Strategy.__dict__["strategy" + str(parameter.tech) + str(parameter.strategy)] \
                 .__func__(event.param["task"], event.sim, parameter)
@@ -67,144 +67,12 @@ class Strategy:
         assert isinstance(sim, Simulation)
         assert isinstance(channel_id, int)
         assert isinstance(parameter, SimulationParameter)
-        r = ActionsGraph({}, [])
-        channels = list(filter(lambda x: isinstance(x, Channel), all_resources))
-        channel = list(filter(lambda x: x.id == channel_id, channels))[0]
-        shuttle = list(filter(lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              resources.items))
-        bay = list(filter(lambda x: isinstance(x, Bay), all_resources))[0]
-        if len(shuttle) == 0:
-            raise Strategy.NeedToWait(task)
-        else:
-            shuttle = shuttle[0]
-        satellite = list(filter(lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
-                                resources.items))
-        if len(satellite) == 0:
-            raise Strategy.NeedToWait(task)
-        else:
-            satellite = satellite[0]
-        if not channel.lift in resources.items:
-            raise Strategy.NeedToWait(task)
-        if task.order_type == OrderType.DEPOSIT:
-            # block all
-            r.tasks.append(task)
-            block = Action(ActionType.BLOCK, channel_id)
-            r.actions[block.id] = block
-            block1 = Action(ActionType.BLOCK, channel.lift.id)
-            r.actions[block1.id] = block1
-            block2 = Action(ActionType.BLOCK, shuttle.id)
-            r.actions[block2.id] = block2
-            block3 = Action(ActionType.BLOCK, satellite.id)
-            r.actions[block3.id] = block3
-            # move satellite to shuttle (retract fork)
-            move = Action(ActionType.MOVE, satellite.id, {"z": 0},
-                          [block.id, block1.id, block2.id, block3.id])
-            r.actions[move.id] = move
-            # move lift to and shuttle to 0 at the same time (diagonal movement)
-            action = Action(ActionType.MOVE, shuttle.id, {"x": 0},
-                            [move.id])
-            r.actions[action.id] = action
-            action1 = Action(ActionType.MOVE, channel.lift.id, {"level": parameter.bay_level},
-                             [move.id])
-            r.actions[action1.id] = action1
-            # get item from bay
-            block_bay = Action(ActionType.BLOCK, bay.id, {}, [action.id, action1.id])
-            r.actions[block_bay.id] = block_bay
-            get = Action(ActionType.GET_FROM_BAY, satellite.id, {"level": parameter.bay_level, "item": task.item},
-                         [block_bay.id])
-            r.actions[get.id] = get
-            free_bay = Action(ActionType.FREE, bay.id, {}, [get.id])
-            r.actions[free_bay.id] = free_bay
-            # move lift to and shuttle to destination at the same time (diagonal movement)
-            action = Action(ActionType.MOVE, shuttle.id, {"x": channel.position.x},
-                            [get.id])
-            r.actions[action.id] = action
-            action1 = Action(ActionType.MOVE, channel.lift.id, {"level": channel.position.level},
-                             [get.id])
-            r.actions[action1.id] = action1
-
-            # move satellite to channel and drop (fork)
-            fork_move = Action(ActionType.MOVE, satellite.id, {"z": channel.first_item_z_position()},
-                               [action.id, action1.id])
-            r.actions[fork_move.id] = fork_move
-            drop = Action(ActionType.DROP, satellite.id, {"channel_id": channel.id},
-                          [fork_move.id])
-            r.actions[drop.id] = drop
-
-            # free all
-            action = Action(ActionType.FREE, channel.lift.id, after=[drop.id])
-            r.actions[action.id] = action
-            action = Action(ActionType.FREE, channel_id, after=[drop.id])
-            r.actions[action.id] = action
-            action = Action(ActionType.FREE, satellite.id, after=[drop.id])
-            r.actions[action.id] = action
-            action = Action(ActionType.FREE, shuttle.id, after=[drop.id])
-            r.actions[action.id] = action
-
-        elif task.order_type == OrderType.RETRIEVAL:
-            # block all
-            r.tasks.append(task)
-            block = Action(ActionType.BLOCK, channel_id)
-            r.actions[block.id] = block
-            block1 = Action(ActionType.BLOCK, channel.lift.id)
-            r.actions[block1.id] = block1
-            block2 = Action(ActionType.BLOCK, shuttle.id)
-            r.actions[block2.id] = block2
-            block3 = Action(ActionType.BLOCK, satellite.id)
-            r.actions[block3.id] = block3
-
-            # move satellite to shuttle (retract fork)
-            move = Action(ActionType.MOVE, satellite.id, {"z": 0},
-                          [block.id, block1.id, block2.id, block3.id])
-            r.actions[move.id] = move
-
-            # move lift to and shuttle to destination at the same time (diagonal movement)
-            action = Action(ActionType.MOVE, shuttle.id, {"x": channel.position.x},
-                            [move.id])
-            r.actions[action.id] = action
-            action1 = Action(ActionType.MOVE, channel.lift.id, {"level": channel.position.level},
-                             [move.id])
-            r.actions[action1.id] = action1
-
-            # move fork and get and retract
-            fork_move = Action(ActionType.MOVE, satellite.id, {"z": channel.first_item_z_position()},
-                               [action.id, action1.id])
-            r.actions[fork_move.id] = fork_move
-
-            drop = Action(ActionType.PICKUP, satellite.id, {"channel_id": channel.id}, [fork_move.id])
-            r.actions[drop.id] = drop
-            fork_move = Action(ActionType.MOVE, satellite.id, {"z": 0},
-                               [drop.id])
-            r.actions[fork_move.id] = fork_move
-
-            # move to bay
-
-            action = Action(ActionType.MOVE, shuttle.id, {"x": 0},
-                            [fork_move.id])
-            r.actions[action.id] = action
-            action1 = Action(ActionType.MOVE, channel.lift.id, {"level": parameter.bay_level},
-                             [fork_move.id])
-            r.actions[action1.id] = action1
-
-            # drop to bay
-            block_bay = Action(ActionType.BLOCK, bay.id, {}, [action.id, action1.id])
-            r.actions[block_bay.id] = block_bay
-
-            drop = Action(ActionType.DROP_TO_BAY, satellite.id, {}, [block_bay.id])
-            r.actions[drop.id] = drop
-
-            free_bay = Action(ActionType.FREE, bay.id, {}, [drop.id])
-            r.actions[free_bay.id] = free_bay
-
-            # free all
-            action = Action(ActionType.FREE, channel.lift.id, after=[drop.id])
-            r.actions[action.id] = action
-            action = Action(ActionType.FREE, channel_id, after=[drop.id])
-            r.actions[action.id] = action
-            action = Action(ActionType.FREE, satellite.id, after=[drop.id])
-            r.actions[action.id] = action
-            action = Action(ActionType.FREE, shuttle.id, after=[drop.id])
-            r.actions[action.id] = action
+        r = ActionsGraph(sim)
+        channel = sim.find_res_by_id(channel_id)
+        block = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
+        move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": channel.position.level},
+                      after=[block.id])
+        free = Free(r, lambda x: isinstance(x, Lift), after=[move.id])
 
         return r
 

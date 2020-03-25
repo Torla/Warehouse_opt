@@ -10,6 +10,7 @@ class Shuttle(MovableResource, Performer):
         MovableResource.__init__(self, env, position, acc, max_v, par)
         Performer.__init__(self, env)
         self.env = env
+        self.position = position
         self.TIME_TO_DROP = 10
         self.TIME_TO_PICKUP = 10
         self.weight = par.Wsh

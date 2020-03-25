@@ -14,7 +14,10 @@ from Warehouse.Warehouse import Warehouse
 class Test:
     @staticmethod
     def test(parameter, trace_parameter):
-        sim = Simulation(parameter)
+        class Status:
+            def __init__(self,parameter):
+                self.parameter = parameter
+        sim = Simulation(Status(parameter))
         # env = simpy.RealtimeEnvironment(0, 0.1, False)
         Logger.enable(False)
         Logger.set_env(sim)
