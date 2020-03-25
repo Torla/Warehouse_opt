@@ -39,6 +39,8 @@ class Strategy:
     @staticmethod
     def strategy(event) -> ActionsGraph:
         assert isinstance(event, Event)
+        event.sim.logger.log(
+            "New task dispached " + str(event.param["task"].order_type) + " " + str(event.param["task"].item))
         parameter = event.sim.get_status().parameter
         try:
             selection = Strategy.__dict__["strategy" + str(parameter.tech) + str(parameter.strategy)] \
@@ -69,10 +71,19 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         r = ActionsGraph(sim)
         channel = sim.find_res_by_id(channel_id)
+        bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         block = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
+        block1 = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
+        move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+                      after=[block.id])
+        move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
+                       after=[block1.id])
         move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": channel.position.level},
                       after=[block.id])
+        move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": channel.position.x},
+                       after=[block1.id])
         free = Free(r, lambda x: isinstance(x, Lift), after=[move.id])
+        free = Free(r, lambda x: isinstance(x, Shuttle), after=[move1.id])
 
         return r
 
@@ -813,8 +824,8 @@ class Strategy:
             return random.choice(channels).id
         elif task.order_type == OrderType.RETRIEVAL:
 
-            channels = sim.find_res(sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
-                    len(x.items) == 0 or x.items[0].item_type == task.item.item_type)))
+            channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
+                    len(x.items) == 0 or x.items[0].item_type == task.item.item_type))
             if len(channels) == 0:
                 raise Strategy.NoItemToTake(task)
             return random.choice(channels).id

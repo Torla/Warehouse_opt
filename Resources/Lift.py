@@ -63,35 +63,3 @@ class Lift(MovableResource, Performer):
         self.content = None
         yield self.env.timeout(self.TIME_TO_DROP)
         return
-
-    def perform(self, action, taken_inf):
-        Performer.perform(self, action, taken_inf)
-        if action.actionType == ActionType.MOVE:
-            if "resource" in action.param:
-                action.param["level"] = list(filter(lambda x: x.id == action.param["resource"], all_resources))[
-                    0].position.level
-            yield self.go_to(action.param["level"])
-            return
-        if action.actionType == ActionType.PICKUP:
-            if self.content is not None and self.content.id == action.param["shuttle"]:
-                return
-            elif self.content is not None:
-                raise Performer.IllegalAction("Lift full before pickup")
-            self.content = list(filter(lambda x: x.id == action.param["shuttle"], taken_inf))[0]
-            if self.content is None:
-                raise Performer.IllegalAction("Lift getting None item")
-            yield self.env.timeout(self.TIME_TO_PICKUP)
-            return
-        if action.actionType == ActionType.DROP:
-            if self.content is None:
-                self.content = None
-                return
-            if not isinstance(self.content, Shuttle):
-                raise Performer.IllegalAction("Lift drop not shuttle")
-            if self.content is None:
-                self.content = None
-            self.content.position.level = self.position.level
-            self.content.position.x = 0
-            self.content = None
-            yield self.env.timeout(self.TIME_TO_DROP)
-            return
