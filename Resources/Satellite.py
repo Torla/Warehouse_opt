@@ -1,6 +1,8 @@
 from overrides import overrides
 
-from Task import Item
+from IdeaSim.Simulation import Simulation
+from Resources.ActionType import ActionType
+from Task import Item, Task
 from Resources.Movement import MovableResource, Position
 from IdeaSim.Resources import Performer
 from SimMain.Logger import Logger
@@ -12,11 +14,17 @@ class Satellite(MovableResource, Performer):
         Performer.__init__(self, env)
         self.env = env
         self.position = position
+        self.position = position
         self.TIME_TO_DROP_TO_CHANNEL = 10
         self.TIME_TO_PICKUP_FROM_CHANNEL = 10
         self.TIME_TO_DROP_TO_BAY = 10
         self.TIME_TO_PICKUP_FROM_BAY = 10
         self.weight = par.Wsa
+        self.add_mapping(ActionType.MOVE, self.move_satellite)
+        self.add_mapping(ActionType.PICKUP, self.pickup)
+        self.add_mapping(ActionType.DROP, self.drop)
+        self.add_mapping(ActionType.DROP_TO_BAY, self.drop_to_bay)
+        self.add_mapping(ActionType.GET_FROM_BAY, self.get_from_bay)
 
     @overrides
     def __str__(self):
@@ -28,39 +36,47 @@ class Satellite(MovableResource, Performer):
 
     def go_to(self, z):
         return self.env.timeout(
-            self.move(Position(self.position.section, self.position.level, self.position.x, z),
-                      self.parameter))
+            self.move(self.sim, Position(self.position.section, self.position.level, self.position.x, z),
+                      self.sim.get_status().parameter))
 
-    def perform(self, action, taken_inf, all_resources):
-        Performer.perform(self, action, taken_inf, all_resources)
-        if action.actionType == ActionType.MOVE:
-            if "resource" in action.param:
-                action.param["z"] = list(filter(lambda x: x.id == action.param["resource"], all_resources))[
-                    0].position.z
-            yield self.go_to(action.param["z"])
-            return
-        if action.actionType == ActionType.PICKUP:  # From channel
-            self.content = yield list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].get()
-            if not isinstance(self.content, Item):
-                raise Performer.IllegalAction("Satellite pickup non Item")
-            yield self.env.timeout(self.TIME_TO_PICKUP_FROM_CHANNEL)
-            return
-        if action.actionType == ActionType.GET_FROM_BAY:
-            self.content = action.param["item"]
-            if not isinstance(self.content, Item):
-                raise Performer.IllegalAction("Satellite pickup non Item from bay")
-            yield self.env.timeout(self.TIME_TO_PICKUP_FROM_BAY)
-            return
-        if action.actionType == ActionType.DROP_TO_BAY:
-            if self.content is None:
-                raise Performer.IllegalAction("Satellite drop None Item to bay")
-            self.content = None
-            yield self.env.timeout(self.TIME_TO_DROP_TO_BAY)
-            return
-        if action.actionType == ActionType.DROP:
-            yield list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].put(self.content)
-            if self.content is None:
-                raise Performer.IllegalAction("Satellite drop None Item to channel")
-            self.content = None
-            yield self.env.timeout(self.TIME_TO_DROP_TO_CHANNEL)
-            return
+    def move_satellite(self, action, sim, taken_inf):
+        assert (isinstance(sim, Simulation))
+        if "resource" in action.param:
+            action.param["z"] = sim.find_res_by_id(action.param["resource"], free=False)[
+                0].position.level
+        yield self.go_to(action.param["z"])
+        return
+
+    def pickup(self, action, sim, taken_inf):
+        assert (isinstance(sim, Simulation))
+        self.content = yield list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].get()
+        if not isinstance(self.content, Item):
+            raise Performer.IllegalAction("Satellite pickup non Item")
+        yield self.env.timeout(self.TIME_TO_PICKUP_FROM_CHANNEL)
+        return
+
+    def drop(self, action, sim, taken_inf):
+        assert (isinstance(sim, Simulation))
+        yield list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].put(self.content)
+        if self.content is None:
+            raise Performer.IllegalAction("Satellite drop None Item to channel")
+        self.content = None
+        yield self.env.timeout(self.TIME_TO_DROP_TO_CHANNEL)
+        return
+
+    def drop_to_bay(self, action, sim, taken_inf):
+        if self.content is None:
+            raise Performer.IllegalAction("Satellite drop None Item to bay")
+        self.content = None
+        yield self.env.timeout(self.TIME_TO_DROP_TO_BAY)
+        return
+
+    def get_from_bay(self, action, sim, taken_inf):
+        self.content = action.param["item"]
+        if not isinstance(self.content, Item.Item):
+            raise Performer.IllegalAction("Satellite pickup non Item from bay")
+        yield self.env.timeout(self.TIME_TO_PICKUP_FROM_BAY)
+        return
+
+
+

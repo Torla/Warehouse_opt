@@ -72,18 +72,35 @@ class Strategy:
         r = ActionsGraph(sim)
         channel = sim.find_res_by_id(channel_id)
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
-        block = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
-        block1 = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
-        move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
-                      after=[block.id])
-        move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
-                       after=[block1.id])
-        move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": channel.position.level},
-                      after=[block.id])
-        move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": channel.position.x},
-                       after=[block1.id])
-        free = Free(r, lambda x: isinstance(x, Lift), after=[move.id])
-        free = Free(r, lambda x: isinstance(x, Shuttle), after=[move1.id])
+        if task.order_type == OrderType.DEPOSIT:
+            block = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
+            block1 = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
+            block2 = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section)
+            block3 = Block(r,channel.id)
+            fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite), param={"z": 0},
+                               after=[block.id, block1.id, block2.id])
+            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+                          after=[fork_move.id])
+            move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
+                           after=[fork_move.id])
+
+            pick_up = Action(r, ActionType.GET_FROM_BAY, lambda x: isinstance(x, Satellite), param={"item": task.item},
+                             after=[move1.id, move.id])
+
+            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": channel.position.level},
+                          after=[pick_up.id])
+            move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": channel.position.x},
+                           after=[pick_up.id])
+
+            fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite),
+                               param={"z": channel.capacity - len(channel.items)}, after=[move.id, move1.id])
+
+            drop = Action(r, ActionType.DROP, lambda x: isinstance(x, Satellite), param={"channel_id": channel.id},
+                          after=[fork_move.id])
+            free = Free(r, lambda x: isinstance(x, Channel), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Satellite), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Shuttle), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Lift), after=[drop.id])
 
         return r
 
