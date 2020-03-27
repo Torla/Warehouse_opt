@@ -35,13 +35,13 @@ if __name__ == '__main__':
     random.seed(time.time())
     random.seed(123)
     Logger.enable(True)
-    par = SimulationParameter(Nx=2, Ny=2, Nz=2,
+    par = SimulationParameter(Nx=2, Ny=8, Nz=80,
                               Lx=5, Ly=5, Lz=5, Cy=1,
                               Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                               Wli=1850, Wsh=850, Wsa=350,
                               Cr=0.02, Fr=1.15, rendiment=0.9,
-                              Nli=1, Nsh=5, Nsa=1,
+                              Nli=4, Nsh=1, Nsa=1,
                               bay_level=1.5,
                               tech=0, strat=0)
-    t_par = TraceParameter(sim_time=10000, type_num=4, int_mean=50, num_mean=5, mean_present=50, seed=[35, 64])
+    t_par = TraceParameter(sim_time=10000, type_num=1, int_mean=10, num_mean=5, mean_present=50, seed=[35, 64])
     Test.test(parameter=par, trace_parameter=t_par)

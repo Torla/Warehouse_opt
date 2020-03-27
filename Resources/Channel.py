@@ -16,7 +16,7 @@ class LifoStore(Store):
             event.succeed()
         else:
             raise Exception("exciting capacity")
-
+1
 
 class Channel(LifoStore, Resource):
     class Orientations(Enum):

@@ -49,8 +49,8 @@ class Satellite(MovableResource, Performer):
 
     def pickup(self, action, sim, taken_inf):
         assert (isinstance(sim, Simulation))
-        self.content = yield list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].get()
-        if not isinstance(self.content, Item):
+        self.content = list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].items.pop()
+        if not isinstance(self.content, Item.Item):
             raise Performer.IllegalAction("Satellite pickup non Item")
         yield self.env.timeout(self.TIME_TO_PICKUP_FROM_CHANNEL)
         return

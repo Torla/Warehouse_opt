@@ -64,6 +64,12 @@ class Strategy:
             exit(-1)
 
     @staticmethod
+    def ab(action, sim):
+        assert (isinstance(sim, Simulation))
+        sim.logger.log("aborting " + str(action), type=sim.Logger.Type.WARNING)
+        Action.abort(action, sim)
+
+    @staticmethod
     def implement0(task, channel_id, sim, parameter) -> ActionsGraph:
         assert isinstance(task, Task)
         assert isinstance(sim, Simulation)
@@ -73,12 +79,15 @@ class Strategy:
         channel = sim.find_res_by_id(channel_id)
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         if task.order_type == OrderType.DEPOSIT:
+            block3 = Block(r, channel.id)
             block = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
             block1 = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
             block2 = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section)
-            block3 = Block(r,channel.id)
             fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite), param={"z": 0},
-                               after=[block.id, block1.id, block2.id])
+                               condition=lambda x: len(
+                                   sim.find_res_by_id(channel_id, free=False).items) != sim.find_res_by_id(channel_id,
+                                                                                                           free=False).capacity,
+                               after=[block.id, block1.id, block2.id, block3.id])
             move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
                           after=[fork_move.id])
             move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
@@ -97,10 +106,48 @@ class Strategy:
 
             drop = Action(r, ActionType.DROP, lambda x: isinstance(x, Satellite), param={"channel_id": channel.id},
                           after=[fork_move.id])
-            free = Free(r, lambda x: isinstance(x, Channel), after=[drop.id])
             free = Free(r, lambda x: isinstance(x, Satellite), after=[drop.id])
             free = Free(r, lambda x: isinstance(x, Shuttle), after=[drop.id])
             free = Free(r, lambda x: isinstance(x, Lift), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Channel), after=[drop.id])
+
+        else:
+            block3 = Block(r, channel.id)
+            block = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
+            block1 = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
+            block2 = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section)
+            fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite), param={"z": 0},
+                               after=[block.id, block1.id, block2.id, block3.id],
+                               condition=lambda x: len(sim.find_res_by_id(channel_id, free=False).items) != 0,
+                               on_false=Strategy.ab)
+
+            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": channel.position.level},
+                          after=[fork_move.id])
+            move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": channel.position.x},
+                           after=[fork_move.id])
+
+            fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite),
+                               param={"z": channel.capacity - len(channel.items)},
+                               after=[move.id, move1.id])
+
+            pick_up = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Satellite), param={"channel_id": channel_id},
+                             after=[move1.id, move.id],
+                             condition=lambda x: len(sim.find_res_by_id(channel_id, free=False).items) != 0)
+
+            fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite), param={"z": 0},
+                               after=[fork_move.id])
+
+            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+                          after=[fork_move.id])
+            move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
+                           after=[fork_move.id])
+
+            drop = Action(r, ActionType.DROP_TO_BAY, lambda x: isinstance(x, Satellite), param={},
+                          after=[move1.id, move.id])
+            free = Free(r, lambda x: isinstance(x, Satellite), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Shuttle), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Lift), after=[drop.id])
+            free = Free(r, lambda x: isinstance(x, Channel), after=[drop.id])
 
         return r
 
@@ -837,15 +884,18 @@ class Strategy:
             channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
                     len(x.items) == 0 or x.items[0].item_type == task.item.item_type))
             if len(channels) == 0:
+                sim.logger.log("No place to deposit " + str(task.item), type=Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task)
             return random.choice(channels).id
         elif task.order_type == OrderType.RETRIEVAL:
 
-            channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
-                    len(x.items) == 0 or x.items[0].item_type == task.item.item_type))
+            channels = sim.find_res(lambda x: isinstance(x, Channel) and
+                                              len(x.items) > 0 and x.items[0].item_type == task.item.item_type)
             if len(channels) == 0:
+                sim.logger.log("No item to recover " + str(task.item), type=Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task)
-            return random.choice(channels).id
+            ret = random.choice(channels)
+            return ret.id
 
     # not rewrote
 

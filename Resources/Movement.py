@@ -17,7 +17,7 @@ class Position:
         self.section = section
 
     def __str__(self):
-        return " level: " + str(self.level) + " x: " + str(self.x) + " z: " + str(self.z)
+        return "s: " + str(self.section) + " level: " + str(self.level) + " x: " + str(self.x) + " z: " + str(self.z)
 
 
 class MovableResource(Resource):
