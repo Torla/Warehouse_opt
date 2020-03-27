@@ -897,239 +897,28 @@ class Strategy:
             ret = random.choice(channels)
             return ret.id
 
-    # not rewrote
-
-    # nearest to bay on free lift
+    # nearest to bay
     @staticmethod
-    def strategy01(task, resources, all_resources, parameter) -> int:
+    def strategy01(task, sim, parameter) -> int:
         assert isinstance(task, Task)
         assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        free_lifts_section = map(lambda x: x.position.section, list(
-            filter(lambda x: isinstance(x, Lift), resources.items)))
+        assert isinstance(sim, Simulation)
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
+            channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
+                    len(x.items) == 0 or x.items[0].item_type == task.item.item_type))
+            if len(channels) == 0:
+                sim.logger.log("No place to deposit " + str(task.item), type=Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task)
-            valid_channels = list(filter(lambda x: x.position.section in free_lifts_section, valid_channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NeedToWait(task)
-            return sorted(valid_channels, key=lambda x: distance(x.position, Position(None, 0, 0, 0), parameter))[0].id
+            return random.choice(channels).id
         elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
 
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
+            channels = sim.find_res(lambda x: isinstance(x, Channel) and
+                                              len(x.items) > 0 and x.items[0].item_type == task.item.item_type)
+            if len(channels) == 0:
+                sim.logger.log("No item to recover " + str(task.item), type=Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task)
-            valid_channels = list(filter(lambda x: x.position.section in free_lifts_section, valid_channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NeedToWait(task)
-            return sorted(valid_channels, key=lambda x: distance(x.position, Position(None, 0, 0, 0), parameter))[0].id
-
-    @staticmethod
-    def strategy11(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        free_lifts_section = map(lambda x: x.position.section, list(
-            filter(lambda x: isinstance(x, Lift), resources.items)))
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            valid_channels = list(filter(lambda x: x.position.section in free_lifts_section, valid_channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NeedToWait(task)
-            return sorted(valid_channels, key=lambda x: distance(x.position, Position(None, 0, 0, 0), parameter))[0].id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            valid_channels = list(filter(lambda x: x.position.section in free_lifts_section, valid_channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NeedToWait(task)
-            return sorted(valid_channels, key=lambda x: distance(x.position, Position(None, 0, 0, 0), parameter))[0].id
-
-    @staticmethod
-    def strategy21(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        free_lifts_section = map(lambda x: x.position.section, list(
-            filter(lambda x: isinstance(x, Lift), resources.items)))
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            valid_channels = list(filter(lambda x: x.position.section in free_lifts_section, valid_channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NeedToWait(task)
-            return sorted(valid_channels, key=lambda x: distance(x.position, Position(None, 0, 0, 0), parameter))[0].id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            valid_channels = list(filter(lambda x: x.position.section in free_lifts_section, valid_channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NeedToWait(task)
-            return sorted(valid_channels, key=lambda x: distance(x.position, Position(None, 0, 0, 0), parameter))[0].id
-
-    # fullest channel put emptiest take
-    @staticmethod
-    def strategy02(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        free_lifts_section = map(lambda x: x.position.section, list(
-            filter(lambda x: isinstance(x, Lift), resources.items)))
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            return sorted(valid_channels, key=lambda x: len(x.items))[0].id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            return sorted(valid_channels, key=lambda x: x.capacity - len(x.items))[0].id
-
-    @staticmethod
-    def strategy12(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        free_lifts_section = map(lambda x: x.position.section, list(
-            filter(lambda x: isinstance(x, Lift), resources.items)))
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            return sorted(valid_channels, key=lambda x: len(x.items))[0].id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            return sorted(valid_channels, key=lambda x: x.capacity - len(x.items))[0].id
-
-    @staticmethod
-    def strategy22(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        free_lifts_section = map(lambda x: x.position.section, list(
-            filter(lambda x: isinstance(x, Lift), resources.items)))
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            return sorted(valid_channels, key=lambda x: len(x.items))[0].id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            return sorted(valid_channels, key=lambda x: x.capacity - len(x.items))[0].id
-
-    # random channel select
-    @staticmethod
-    def strategy10(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            return random.choice(valid_channels).id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            return random.choice(valid_channels).id
-
-    @staticmethod
-    def strategy20(task, resources, all_resources, parameter) -> int:
-        assert isinstance(task, Task)
-        assert isinstance(parameter, SimulationParameter)
-        assert isinstance(resources, Resources)
-        if task.order_type == OrderType.DEPOSIT:
-            # select valid channel
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: len(x.items) < x.capacity and (
-                        len(x.items) == 0 or x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoPlaceTODeposit(task)
-            return random.choice(valid_channels).id
-        elif task.order_type == OrderType.RETRIEVAL:
-            channels = list(filter(lambda x: isinstance(x, Channel), resources.items))
-
-            valid_channels = list(filter(
-                lambda x: (len(x.items) > 0 and x.items[0].item_type == task.item.item_type),
-                channels))
-            if len(valid_channels) == 0:
-                raise Strategy.NoItemToTake(task)
-            return random.choice(valid_channels).id
+            bays = sim.find_res(func=lambda x: isinstance(x, Bay), free=False)
+            bay_pos = bays[0].position
+            ret = sorted(channels, key=lambda x: distance(x.position, bay_pos, sim.get_status().parameter))[0]
+            return ret.id

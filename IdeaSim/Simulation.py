@@ -67,7 +67,7 @@ class Simulation(simpy.Environment):
 
     def find_res(self, func, free=True) -> list:
         # todo this is the bottle neck
-        l = self.free_res.items if free else self.all_res
+        l = self.free_res.items if free else self.all_res.values()
         return list(filter(lambda x: func(x), l))
 
     def get_res_by_id(self, id):
@@ -87,6 +87,7 @@ class Simulation(simpy.Environment):
         return res in self.free_res.items
 
     def put_res(self, res):
+        assert (isinstance(res, Resource))
         assert isinstance(res, Resource)
         return self.free_res.put(res)
 
