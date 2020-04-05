@@ -41,9 +41,7 @@ class Lift(MovableResource, Performer):
 
     def pickup(self, action, sim, taken_inf):
         assert (isinstance(sim, Simulation))
-        if self.content is not None and self.content.id == action.param["shuttle"]:
-            return
-        elif self.content is not None:
+        if self.content is not None:
             raise Performer.IllegalAction("Lift full before pickup")
         if "shuttle" in action.param:
             self.content = list(filter(lambda x: x.id == action.param["shuttle"], taken_inf))[0]
