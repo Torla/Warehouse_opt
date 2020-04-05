@@ -150,7 +150,7 @@ class Executor:
         try:
             if action.condition is not None:
                 assert callable(action.condition)
-                if not (action.condition(sim)):
+                if not (action.condition(sim,taken_inf)):
                     if action.on_false is not None:
                         assert callable(action.on_false)
                         yield completed_flags[action.id].put(float('inf'))

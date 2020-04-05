@@ -30,6 +30,8 @@ class Shuttle(MovableResource, Performer):
         if "resource" in action.param:
             action.param["x"] = sim.find_res_by_id(action.param["resource"], free=False)[
                 0].position.level
+        elif "auto" in action.param:
+            action.param["level"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.x
         yield self.go_to(action.param["x"])
         return
 
@@ -39,7 +41,10 @@ class Shuttle(MovableResource, Performer):
             return
         elif self.content is not None:
             raise Performer.IllegalAction("shuttle full before pickup")
-        self.content = list(filter(lambda x: x.id == action.param["satellite"], taken_inf))[0]
+        if "satellite" in action.param:
+            self.content = list(filter(lambda x: x.id == action.param["satellite"], taken_inf))[0]
+        elif "auto" in action.param:
+            self.content = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0]
         if self.content is None:
             raise Performer.IllegalAction("Shuttle getting None item")
         yield self.env.timeout(self.TIME_TO_PICKUP)

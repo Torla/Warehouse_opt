@@ -34,6 +34,8 @@ class Lift(MovableResource, Performer):
         if "resource" in action.param:
             action.param["level"] = sim.find_res_by_id(action.param["resource"], free=False)[
                 0].position.level
+        elif "auto" in action.param:
+            action.param["level"] = list(filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].position.level
         yield self.go_to(action.param["level"])
         return
 
@@ -43,7 +45,10 @@ class Lift(MovableResource, Performer):
             return
         elif self.content is not None:
             raise Performer.IllegalAction("Lift full before pickup")
-        self.content = list(filter(lambda x: x.id == action.param["shuttle"], taken_inf))[0]
+        if "shuttle" in action.param:
+            self.content = list(filter(lambda x: x.id == action.param["shuttle"], taken_inf))[0]
+        elif "auto" in action.param:
+            self.content = list(filter(lambda x: isinstance(x, Shuttle), taken_inf))[0]
         if self.content is None:
             raise Performer.IllegalAction("Lift getting None item")
         yield self.env.timeout(self.TIME_TO_PICKUP)
