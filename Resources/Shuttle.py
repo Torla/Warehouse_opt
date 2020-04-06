@@ -31,7 +31,7 @@ class Shuttle(MovableResource, Performer):
             action.param["x"] = sim.find_res_by_id(action.param["resource"], free=False)[
                 0].position.level
         elif "auto" in action.param:
-            action.param["level"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.x
+            action.param["x"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.x
         yield self.go_to(action.param["x"])
         return
 

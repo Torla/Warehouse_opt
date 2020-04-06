@@ -4,6 +4,7 @@ from IdeaSim.Simulation import Simulation
 from Resources.ActionType import ActionType
 from Resources.Movement import MovableResource, Position
 from IdeaSim.Resources import Performer
+from Resources.Satellite import Satellite
 from Resources.Shuttle import Shuttle
 
 
@@ -19,6 +20,7 @@ class Lift(MovableResource, Performer):
         self.add_mapping(ActionType.MOVE, self.move_lift)
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
+
 
     @overrides
     def __str__(self):
@@ -36,6 +38,8 @@ class Lift(MovableResource, Performer):
                 0].position.level
         elif "auto" in action.param:
             action.param["level"] = list(filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].position.level
+        elif "auto_sat" in action.param:
+            action.param["level"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.level
         yield self.go_to(action.param["level"])
         return
 

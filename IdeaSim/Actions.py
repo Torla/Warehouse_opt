@@ -89,6 +89,8 @@ class Executor:
         taken_inf = []
         completed_flags = {}
 
+        start = self.sim.now
+
         for action_id in self.action_tree.actions.keys():
             completed_flags[action_id] = Container(self.sim)
 
@@ -113,6 +115,10 @@ class Executor:
             raise Exception("Resources not free at end of task")
 
         self.sim.manager.activate()
+
+        #monitor
+
+        self.sim.get_status().monitor.tasks.append([self.sim.now - start])
 
     def execute(self, action_tree, action, taken_inf, sim, completed_flags):
         assert isinstance(action, Action)

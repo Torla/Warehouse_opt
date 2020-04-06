@@ -4,7 +4,7 @@ from overrides import overrides
 import Resources
 from IdeaSim.Resources import Resource
 from Resources import EnergyModel
-from SimMain.Logger import Logger
+
 from SimMain.SimulationParameter import SimulationParameter
 import numpy as np
 
@@ -58,7 +58,7 @@ class MovableResource(Resource):
         return int(self.smart_round(time))
 
     def __drag__(self, position):
-        Logger.log("with " + str(self), 30)
+        self.sim.logger.log("with " + str(self), 30)
         self.position = Position(position.section, position.level, position.x, position.z)
         if self.content is None or not isinstance(self.content, MovableResource):
             return

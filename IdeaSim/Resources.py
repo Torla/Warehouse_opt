@@ -36,9 +36,12 @@ class Performer(Resource):
         self.action_map[action_type] = func
 
     def perform(self, action, taken_inf):
-        self.sim.logger.log(str(self) + " perform " + str(action), 7)
-        for i in self.action_map[action.actionType](action, self.sim, taken_inf):
-            yield i
+        try:
+            self.sim.logger.log(str(self) + " perform " + str(action), 7)
+            for i in self.action_map[action.actionType](action, self.sim, taken_inf):
+                yield i
+        except Exception as err:
+            raise Exception(err)
 
 
 class Position:

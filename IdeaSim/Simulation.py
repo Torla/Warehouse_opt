@@ -54,6 +54,12 @@ class Simulation(simpy.Environment):
 
         self.global_mutex = Simulation.Mutex(self)
 
+        # monitor
+
+        self.start = 0
+        self.working_time = 0
+        self.stop = True
+
     # adding new not re-putting
     def add_res(self, res):
         assert isinstance(res, Resource)
@@ -71,9 +77,20 @@ class Simulation(simpy.Environment):
         return list(filter(lambda x: func(x), l))
 
     def get_res_by_id(self, id):
+        # monitor
+        if self.stop:
+            self.stop = False
+            self.start = self.now
+
+        # not monitor
         return self.free_res.get(lambda x: x.id == id)
 
     def get_res(self, func, sort_by=None):
+        # monitor
+        if self.stop:
+            self.stop = False
+            self.start = self.now
+        # not monitor
         if sort_by is not None:
             assert callable(sort_by)
             l = self.find_res(func)
@@ -89,6 +106,9 @@ class Simulation(simpy.Environment):
     def put_res(self, res):
         assert (isinstance(res, Resource))
         assert isinstance(res, Resource)
+        if len(self.free_res.items) == len(self.all_res) - 1:
+            self.working_time += self.now - self.start
+            self.stop = True
         return self.free_res.put(res)
 
     def wait(self, delay):
