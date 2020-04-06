@@ -331,7 +331,6 @@ class Strategy:
             block_channel = Block(r, channel.id)
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section)
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
-            block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section)
 
             # take sat to 0
 
@@ -343,49 +342,71 @@ class Strategy:
             move_shu = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
                               after=[block_shu.id])
 
+            # condition check
+
+            branch_sat_shu_lf = Branch(r, after=[block_sat.id, block_shu.id],
+                                       condition=lambda sim,
+                                                        taken_inf: lift.content is None or lift.content.id !=
+                                                                              list(
+                                                                                  filter(
+                                                                                      lambda x: isinstance(x, Shuttle),
+                                                                                      taken_inf))[0].id or list(
+                                                   filter(lambda x: isinstance(x, Shuttle),
+                                                          taken_inf))[0].content is None or list(
+                                                   filter(lambda x: isinstance(x, Shuttle),
+                                                          taken_inf))[0].content != list(
+                                                   filter(lambda x: isinstance(x, Satellite),
+                                                          taken_inf))[0])
+
+            # lift the shu
+
+            block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
+                               after=[branch_sat_shu_lf.id],
+                               branch=branch_sat_shu_lf)
+
             security_drop = Action(r, ActionType.DROP, lambda x: isinstance(x, Lift),
-                                   after=[block_lift.id])
+                                   after=[block_lift.id, block_shu.id, block_sat.id], branch=branch_sat_shu_lf)
 
             move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"auto": 0},
 
-                               after=[security_drop.id,block_shu.id])
+                               after=[security_drop.id, block_shu.id], branch=branch_sat_shu_lf)
 
             pick_up_shu = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Lift), param={"auto": 0},
-                                 after=[move_lift.id, move_shu.id])
+                                 after=[move_lift.id, move_shu.id], branch=branch_sat_shu_lf)
 
             move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"auto_sat": 0},
-                               after=[pick_up_shu.id,block_sat.id])
+                               after=[pick_up_shu.id, block_sat.id], branch=branch_sat_shu_lf)
 
             drop_shu = Action(r, ActionType.DROP, lambda x: isinstance(x, Lift),
-                              after=[move_lift.id])
+                              after=[move_lift.id], branch=branch_sat_shu_lf)
 
-            free_lift = Free(r, lambda x: isinstance(x, Lift), after=[drop_shu.id])
+            free_lift = Free(r, lambda x: isinstance(x, Lift), after=[drop_shu.id], branch=branch_sat_shu_lf)
 
             # shuttle take sat
 
             move_shu = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"auto": 0},
-                              after=[drop_shu.id])
+                              after=[drop_shu.id], branch=branch_sat_shu_lf)
 
             pick_up_sat = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Shuttle), param={"auto": 0},
-                                 after=[move_shu.id, move_sat.id])
+                                 after=[move_shu.id, move_sat.id], branch=branch_sat_shu_lf)
 
             # to zero and lift pick_up
 
             move_shu = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
-                              after=[pick_up_shu.id, block_shu.id])
+                              after=[pick_up_shu.id, block_shu.id], branch=branch_sat_shu_lf)
 
             block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
                                after=[pick_up_sat.id, free_lift.id])
 
             security_drop = Action(r, ActionType.DROP, lambda x: isinstance(x, Lift),
-                                   after=[block_lift.id])
+                                   after=[block_lift.id], branch=branch_sat_shu_lf)
 
             move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"auto": 0},
 
-                               after=[security_drop.id])
+                               after=[security_drop.id], branch=branch_sat_shu_lf)
 
             pick_up_shu = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Lift), param={"auto": 0},
-                                 after=[move_lift.id, move_shu.id])
+                                 after=[move_lift.id, move_shu.id], branch=branch_sat_shu_lf)
 
             # go to bay take and go to level
 
@@ -425,12 +446,14 @@ class Strategy:
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section)
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section)
 
-            branch_shu_on_level = Branch(r, after=[block_shu.id], condition=lambda sim, taken_inf: list(
+            branch_shu_on_level = Branch(r, after=[block_shu.id], condition=lambda sim, taken_inf: True or list(
                 filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].position.level != channel.position.level)
 
             branch_shu_lf = Branch(r, after=[block_shu.id],
-                                   condition=lambda sim, taken_inf: lift.content is None or lift.content.id != list(
-                                       filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].id,
+                                   condition=lambda sim, taken_inf: True or lift.content is None or lift.content.id !=
+                                                                    list(
+                                                                        filter(lambda x: isinstance(x, Shuttle),
+                                                                               taken_inf))[0].id,
                                    branch=branch_shu_on_level)
 
             # go and take shuttle

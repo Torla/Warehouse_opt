@@ -41,7 +41,8 @@ class Performer(Resource):
             for i in self.action_map[action.actionType](action, self.sim, taken_inf):
                 yield i
         except Exception as err:
-            raise Exception(err)
+            print(err)
+            raise err
 
 
 class Position:
