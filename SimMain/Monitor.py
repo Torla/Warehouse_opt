@@ -36,7 +36,7 @@ class Monitor:
 
         res.mean_task_tot_time = self.sim.now / len(self.tasks)
         res.time_per_task = np.average(self.tasks)
-        res.working_time = self.sim.working_time
+        res.working_time = self.sim.working_time if self.sim.working_time != 0 else self.sim.now
         res.mean_task_op_time = res.working_time / len(self.tasks)
         res.energy_consumed = sum(
             [i.energyConsumed for i in list(filter(lambda x: isinstance(x, MovableResource), self.sim.all_res.values()))])

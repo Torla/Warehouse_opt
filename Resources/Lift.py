@@ -21,7 +21,6 @@ class Lift(MovableResource, Performer):
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
 
-
     @overrides
     def __str__(self):
         return "Lift(" + str(self.id) + ")"
@@ -53,6 +52,7 @@ class Lift(MovableResource, Performer):
             self.content = list(filter(lambda x: isinstance(x, Shuttle), taken_inf))[0]
         if self.content is None:
             raise Performer.IllegalAction("Lift getting None item")
+        sim.logger.log(str(self.content), 15)
         yield self.env.timeout(self.TIME_TO_PICKUP)
         return
 
@@ -67,6 +67,7 @@ class Lift(MovableResource, Performer):
             self.content = None
         self.content.position.level = self.position.level
         self.content.position.x = 0
+        sim.logger.log(str(self.content), 15)
         self.content = None
         yield self.env.timeout(self.TIME_TO_DROP)
         return

@@ -47,6 +47,7 @@ class Shuttle(MovableResource, Performer):
             self.content = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0]
         if self.content is None:
             raise Performer.IllegalAction("Shuttle getting None item")
+        sim.logger.log(str(self.content), 15)
         yield self.env.timeout(self.TIME_TO_PICKUP)
         return
 
@@ -62,6 +63,7 @@ class Shuttle(MovableResource, Performer):
         self.content.position.level = self.position.level
         self.content.position.x = self.position.x
         self.content.position.z = 0
+        sim.logger.log(str(self.content), 15)
         self.content = None
         yield self.env.timeout(self.TIME_TO_DROP)
         return
