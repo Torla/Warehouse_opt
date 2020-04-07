@@ -45,6 +45,6 @@ if __name__ == '__main__':
                               Cr=0.02, Fr=1.15, rendiment=0.9,
                               Nli=2, Nsh=2, Nsa=4,
                               bay_level=1.5,
-                              tech=2, strat=0)
-    t_par = TraceParameter(sim_time=10000, type_num=5, int_mean=10, num_mean=50, mean_present=50, seed=[35, 64])
+                              tech=2, strat=1)
+    t_par = TraceParameter(sim_time=20000, type_num=2, int_mean=100, num_mean=50, mean_present=50, seed=[35, 64])
     Test.test(parameter=par, trace_parameter=t_par)

@@ -29,7 +29,7 @@ class Warehouse:
         shuttles = []
         satellites = []
         channels = []
-        bay = Bay.Bay(self.sim,Position(None, self.parameter.bay_level, 0, 0))
+        bay = Bay.Bay(self.sim, Position(None, self.parameter.bay_level, 0, 0))
         for i in range(0, self.parameter.Nli):
             lifts.append(Lift(self.sim, Position(i, 0, 0, 0), self.parameter.Ay, self.parameter.Vy, self.parameter))
             for j in range(0, self.parameter.Nsh):
@@ -53,7 +53,7 @@ class Warehouse:
                                 Channel.Orientations.LEFT,
                                 ))
                     channels.append(
-                        Channel(self.sim, math.ceil((nz_of_section / 2) / self.parameter.Nli), lifts[i],
+                        Channel(self.sim, math.ceil((nz_of_section / 2)), lifts[i],
                                 Position(i, y, x, 0),
                                 Channel.Orientations.RIGHT,
                                 ))
@@ -66,6 +66,5 @@ class Warehouse:
             self.sim.add_res(r)
         for r in channels:
             self.sim.add_res(r)
-
 
         # self.monitor = Monitor(env, self.task_queue, self.parameter, self)
