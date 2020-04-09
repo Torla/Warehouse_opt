@@ -9,7 +9,7 @@ from Resources.Movement import Position
 from Resources.Satellite import Satellite
 from Resources.Shuttle import Shuttle
 from SimMain.SimulationParameter import SimulationParameter
-from Task.TaskDipatcher import TaskDispatcher
+from Task.TaskDispatcher import TaskDispatcher
 
 
 class Warehouse:

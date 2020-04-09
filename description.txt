@@ -68,5 +68,107 @@ SimMain:
         Strategy
         Warehouse
 
+    SimulationParameter
+        Class aggregation all the parameter of a simulation
+            rendiment -> rediment of engines
+            Fr -> friction
+            Cr -> c (don't know) ask degio
+            Nsa -> number of satellite per  shuttle
+            Nsh -> shuttle per lift
+            Nli -> number of lifts
+            Vz -> max speed of satellite
+            Az -> acceleration of satellite
+            Vy -> max speed of lift
+            Ay -> acceleration of lifts
+            Vx -> max speed of shuttles
+            Ax -> acceleration of shuttle
+            Cy -> non used
+            Wli -> weight of lift
+            Wsh -> weight of shuttle
+            Wsa -> weight of satellite
+            Lz -> width of pallet slot
+            Ly -> height of level/channel
+            Lx -> depth of channel
+            Nz -> number of pallet slot in z dimension (width of warehouse)
+            Ny -> number of level
+            Nx -> number of channel in level (/2 for right left), i.e depth of warehouse
+            bay_level -> level at which the bay is found (can be float)
+            tech -> technology adopted
+                0 -> lift+fork
+                1 -> lift + shuttle + fork
+                2 -> lift + shuttle + satellite
+            strategy -> strategy adopted for selection of channel
+                0 -> random
+                1 -> nearest to bay, random section
+                2 -> emptier channel
 
+    Warehouse
+        Warehouse take a SimulationParameter and add to the simulation all the necessary resources. It also take the
+        trace of tasked to be performed
 
+    Monitor
+        Monitor is the object used to store info about the simulation and return SimulationResulted, an aggregation of
+        stats about the warehouse. I also define the Results class that aggregate various stats:
+            mean_task_wait -> not implemented yet, avarege wait for task
+            mean_task_op_time -> mean time for task based on active time
+            mean_task_tot_time -> mean time for task based on all sim time
+            working_time -> warehouse active time (considered active if a resources is taken)
+            time_per_task -> mean task per time from the point of view of the task (no pararellization)
+            energy_consumed -> tot energy consumed in KW/h
+            parr_ratio 
+            
+
+    Strategy:
+        Implement the action sequences for different techs. Different techs are obtained by having the same resources of
+        tech 2 but having different sequence for operation. The class also implements method for the different strategies
+
+        main:
+            The test() method of the Test class takes  the parameter of the warehouse and the parameter from which generate
+            the trace. It run the simulation a return a Results objects
+
+Trace:
+    The method trace_generator() generate the trace for the simulation based on TraceParameter:
+        type_num -> number of type of pallet
+        sim_time -> simulation time
+        seed -> seed for generation
+        mean_present -> desired min number of pallet in warehouse at any time
+        num_mean -> non used
+        int_mean -> mean time between task (generate based on a exponential distribution)
+
+Task:
+    Task
+        Class that rappresent a sigle order, it has:
+         order_type -> DEPOSIT ot RETRIEVAL
+         id -> unique id auto generated
+         Item -> the item
+
+    Item
+        Represent a pallet has a type,a generated id and a weight
+
+    TaskDispatcher
+        Class that generate event based on a trace. Called by the warehouse generator
+
+Resources:
+    Extend the IdeaSim resource for this specific simulation
+
+    ActionType:
+        enum of actions that performers implemented in the package can perform
+
+    Movement:
+        Position class represent the positions of a resources:
+            section
+            x
+            level
+            z
+
+        The distance method return the manhattan distance between two position
+
+        MovableResource implement method that manage the movement of a resource
+
+    EnergyModel:
+        Implement the energy model for resources movement. It calculate the energy used in a movement
+
+    Bay:
+        the bay resource
+
+    Lift,Shuttle and Satellite are perform that represent the 3 machines

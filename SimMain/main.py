@@ -36,7 +36,7 @@ if __name__ == '__main__':
     random.seed(time.time())
     random.seed(123)
     par = SimulationParameter(Nx=8, Ny=8, Nz=80,
-                              Lx=5, Ly=5, Lz=5, Cy=1,
+                              Lx=5, Ly=5, Lz=5, Cy=0,
                               Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                               Wli=1850, Wsh=850, Wsa=350,
                               Cr=0.02, Fr=1.15, rendiment=0.9,
