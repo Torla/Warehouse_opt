@@ -5,7 +5,7 @@ from Resources.ActionType import ActionType
 from Task import Item, Task
 from Resources.Movement import MovableResource, Position
 from IdeaSim.Resources import Performer
-from SimMain.Logger import Logger
+
 
 
 class Satellite(MovableResource, Performer):

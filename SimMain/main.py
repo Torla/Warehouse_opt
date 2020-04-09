@@ -2,11 +2,10 @@ import random
 import time
 
 from IdeaSim.Simulation import Simulation
-from SimMain.Logger import Logger
 from SimMain.Monitor import Monitor
 from SimMain.SimulationParameter import SimulationParameter
 from Trace.Trace import trace_generator, TraceParameter
-from Warehouse.Warehouse import Warehouse
+from SimMain.Warehouse import Warehouse
 
 
 class Test:
@@ -19,9 +18,8 @@ class Test:
 
         sim = Simulation(Status(parameter, None))
         sim.__status__.monitor = Monitor(sim)
+        sim.logger.enable(True)
         # env = simpy.RealtimeEnvironment(0, 0.1, False)
-        Logger.enable(False)
-        Logger.set_env(sim)
         # warehouse = Warehouse(env, parameter, trace_load("trace1.json"))
         warehouse = Warehouse(sim, parameter, trace_generator(trace_parameter))
         sim.run()
@@ -37,7 +35,6 @@ class Test:
 if __name__ == '__main__':
     random.seed(time.time())
     random.seed(123)
-    Logger.enable(True)
     par = SimulationParameter(Nx=8, Ny=8, Nz=80,
                               Lx=5, Ly=5, Lz=5, Cy=1,
                               Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,

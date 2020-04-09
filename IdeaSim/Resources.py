@@ -45,17 +45,6 @@ class Performer(Resource):
             raise err
 
 
-class Position:
-    def __init__(self):
-        pass
-
-    def distance(self, pos) -> float:
-        raise NotImplementedError("Please Implement this method")
-
-    def __eq__(self, other):
-        raise NotImplementedError("Please Implement this method")
-
-
 class Movable:
     def __init__(self, position, sim):
         self.sim = sim

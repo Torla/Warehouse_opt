@@ -8,7 +8,6 @@ from Resources.Channel import Channel
 from Resources.Lift import Lift
 from Resources.Satellite import Satellite
 from Resources.Shuttle import Shuttle
-from SimMain.Logger import Logger
 from SimMain.SimulationParameter import SimulationParameter
 from Task.Task import Task, OrderType
 from IdeaSim.Simulation import Simulation
@@ -664,7 +663,7 @@ class Strategy:
                 0].item_type == task.item.item_type) and x.position.section == section),
                               key=lambda x: distance(x.position, bay.position, sim.get_status().parameter))
             if len(channels) == 0:
-                sim.logger.log("No place to deposit " + str(task.item), type=Logger.Type.WARNING)
+                sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task)
             return channels[0].id
         elif task.order_type == OrderType.RETRIEVAL:
@@ -674,7 +673,7 @@ class Strategy:
                                                          0].item_type == task.item.item_type and x.position.section == section),
                               key=lambda x: distance(x.position, bay.position, sim.get_status().parameter))
             if len(channels) == 0:
-                sim.logger.log("No item to recover " + str(task.item), type=Logger.Type.WARNING)
+                sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task)
             ret = channels[0]
             return ret.id

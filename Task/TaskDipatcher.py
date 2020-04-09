@@ -1,5 +1,3 @@
-from SimMain.Logger import Logger
-from Task.Task import Task
 from IdeaSim.Simulation import Simulation
 from IdeaSim.Event import Event
 

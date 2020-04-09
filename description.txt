@@ -1,0 +1,72 @@
+The simulation is composed of 5 packages :
+    IdeaSim
+    Resources
+    SimMain
+    Task
+    Trace
+
+IdeaSim:
+    IdeaSim is an extension of the SimPy framework, written by me witch add support and logic for easiest request of
+    resources, event generation and handling, performer witch can execute actions with dependecy between them.
+    It's composed of 5 modules:
+        Actions
+        Event
+        Manager
+        Resources
+        Simulation
+
+    Simulation:
+        Simulation contains the definition od simulation witch is a class who extend the simpy Environment, adding the
+        management of resources, a logger to log various event and a status that can be accessed from everywhere within
+        the simulation
+
+    Resources:
+    Resources implements some class extending the basic resource of SimPy, these are:
+        Resources that only add a unique id and a reference to the simulation.
+        Perform which can perform action, this is achieved by the mapping between Action type and a method.
+        Movable a resource which can be moved
+
+    Event:
+        Event is an object which can set to trigger at some point in the future, the manager class is going to map it to a
+        method by its type
+
+    Manager:
+        The manager object menage events, calling the mapped function and lacing the executor if the function return an
+        ActionGraph
+
+    Action:
+        This module define class to manage action to be performed by Perform:
+        Action:
+            The action class is an action to be performed, it as :
+                action_graph -> the relative actionGraph
+                type -> the type of the event, the key of the mapping on the performer
+                who -> id of the performer which is going to execute the action, can be a lambda
+                sort_by -> if who is a lambda the smallest result will be selected
+                param -> a dict to be passed to the function call on the performer
+                after -> list of id of action to be performed BEFORE this one
+                condition -> a lambda evaluated before execution, if false the execution will be skipped. The mapped function
+                wont be called but for the dependencies function the action is considered done
+                on_false -> method to be called if condition is false
+                branch -> se later
+        Other class extending Action for auto manage of common needs:
+            Block -> requesting a resources (perform must be blocked before performing)
+            Free -> release of resources
+            GenerateEvent -> generate an event
+            Branch -> A special action without performer, with a condition. Other action can be tied to a branch via
+            the the branch  parameter to easier implementation of optional (depend from the situation) step in execution.
+            branch can be tied to other branches
+        ActionGraph:
+            A container for a set of actions with dependencies. This is the will be executed and that can request resources
+        Executor:
+            Object called by the manager. It control and manage the execution of an ActionsGraph
+
+SimMain:
+    Contains module to set, start and control the simulation:
+        main
+        Monitor
+        SimulationParameter
+        Strategy
+        Warehouse
+
+
+
