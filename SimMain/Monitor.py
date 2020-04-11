@@ -34,6 +34,7 @@ class Monitor:
     def get_result(self) -> Results:
         res = Monitor.Results()
 
+        res.mean_task_wait = 0
         res.mean_task_tot_time = self.sim.now / len(self.tasks)
         res.time_per_task = np.average(self.tasks)
         if not self.sim.stop:

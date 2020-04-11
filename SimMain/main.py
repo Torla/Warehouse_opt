@@ -18,13 +18,14 @@ class Test:
 
         sim = Simulation(Status(parameter, None))
         sim.__status__.monitor = Monitor(sim)
-        sim.logger.enable(True)
+        sim.logger.enable(False)
         # env = simpy.RealtimeEnvironment(0, 0.1, False)
         # warehouse = Warehouse(env, parameter, trace_load("trace1.json"))
         warehouse = Warehouse(sim, parameter, trace_generator(trace_parameter))
         sim.run()
 
         sim.logger.log(str(sim.get_status().monitor.get_result()))
+        return sim.get_status().monitor.get_result()
 
 
 # warehouse.monitor.plot(definition=3600)
