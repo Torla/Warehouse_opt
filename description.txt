@@ -115,16 +115,18 @@ SimMain:
             working_time -> warehouse active time (considered active if a resources is taken)
             time_per_task -> mean task per time from the point of view of the task (no pararellization)
             energy_consumed -> tot energy consumed in KW/h
-            parr_ratio 
+            area
+            volume
             
 
     Strategy:
         Implement the action sequences for different techs. Different techs are obtained by having the same resources of
-        tech 2 but having different sequence for operation. The class also implements method for the different strategies
+        tech 2 but having different sequence for operation. The class also implements method for the different strategies:
+        #todo write strat
 
-        main:
-            The test() method of the Test class takes  the parameter of the warehouse and the parameter from which generate
-            the trace. It run the simulation a return a Results objects
+main:
+    The test() method of the Test class takes  the parameter of the warehouse and the parameter from which generate
+    the trace. It run the simulation a return a Results objects
 
 Trace:
     The method trace_generator() generate the trace for the simulation based on TraceParameter:

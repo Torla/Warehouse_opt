@@ -39,10 +39,10 @@ class Opt:
                            strat_par_y=OptRange(0, 1, True))
 
         t_par = TraceParameter(sim_time=10000, type_num=2, int_mean=100, num_mean=25, mean_present=50, seed=[35, 64])
-        f_par = FitnessParameter(task_op_time=1)
+        f_par = FitnessParameter(time_per_task=1, area=0.1)
 
         for m in [0.2]:
-            for pop in [50]:
+            for pop in [10]:
                 res = []
                 t = []
                 s = time()
@@ -51,6 +51,7 @@ class Opt:
                     print("t: " + str(time() - s))
                     print(i.get_fitness())
                     print(par.map(i).__dict__)
+                    print(str(i.res.get()[0]))
                     t.append(time() - s)
                     res.append(i.get_fitness())
                     if time() - s > 1000:
@@ -104,7 +105,7 @@ class OptParameter(SimulationParameter):
 class FitnessParameter(Monitor.Results):
 
     def __init__(self, mean_task_wait=0, task_op_time=0, task_tot_time=0, working_time=0, time_per_task=0,
-                 energy_consumed=0., parr_ratio=0):
+                 energy_consumed=0., area=0, volume=0):
         super().__init__()
         self.mean_task_wait = mean_task_wait
         self.mean_task_op_time = task_op_time
@@ -112,7 +113,8 @@ class FitnessParameter(Monitor.Results):
         self.working_time = working_time
         self.time_per_task = time_per_task
         self.energy_consumed = energy_consumed
-        self.parr_ratio = parr_ratio
+        self.area = area
+        self.volume = volume
 
 
 class Solution(List):

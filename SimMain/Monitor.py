@@ -14,7 +14,8 @@ class Monitor:
             self.working_time = np.inf
             self.time_per_task = np.inf
             self.energy_consumed = np.inf
-            self.parr_ratio = 0
+            self.area = 0
+            self.volume = 0
             # todo add area, volume, num_res (separato per tipo), tempo ciclo (quello strano), energia per ciclo (if
             #  easy), utilizzazione (per tipo)
 
@@ -25,7 +26,9 @@ class Monitor:
                    + "\nEnergy consumed: " + str(self.energy_consumed / 1000) + " KW/h" \
                    + "\nWorking time: " + str(self.working_time) \
                    + "\nTime per task: " + str(self.time_per_task) \
-                   + "\nPararelization ratio: " + str(self.parr_ratio)
+                   + "\nArea: " + str(self.area) \
+                   + "\nVolume: " + str(self.volume) \
+
 
     def __init__(self, sim):
         assert isinstance(sim, Simulation)
@@ -34,6 +37,8 @@ class Monitor:
         self.working_time = 0
 
     def get_result(self) -> Results:
+        par = self.sim.get_status().parameter
+
         res = Monitor.Results()
 
         res.mean_task_wait = 0
@@ -46,5 +51,8 @@ class Monitor:
         res.energy_consumed = sum(
             [i.energyConsumed for i in
              list(filter(lambda x: isinstance(x, MovableResource), self.sim.all_res.values()))])
-        res.parr_ratio = res.time_per_task / res.mean_task_op_time
+
+        res.area = par.Nx * par.Nz
+        res.volume = res.area * par.Ny
+
         return res
