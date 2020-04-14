@@ -28,20 +28,21 @@ from Trace.Trace import TraceParameter
 class Opt:
     @staticmethod
     def optimization():
-        par = OptParameter(Nx=OptRange(1, 10), Ny=OptRange(1, 10), Nz=OptRange(10, 100),
+        par = OptParameter(Nx=OptRange(5, 10), Ny=OptRange(5, 10), Nz=OptRange(100, 200),
                            Lx=5, Ly=5, Lz=5, Cy=1,
                            Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                            Wli=1850, Wsh=850, Wsa=350,
                            Cr=0.02, Fr=1.15, rendiment=0.9,
-                           Nli=OptRange(1, 3), Nsh=OptRange(1, 3), Nsa=OptRange(1, 3),
+                           Nli=OptRange(5, 10), Nsh=OptRange(1, 4), Nsa=OptRange(1, 4),
                            bay_level=OptRange(0, 5, True),
-                           tech=OptRange(0, 2), strat=OptRange(0, 2))
+                           tech=OptRange(0, 2), strat=1, strat_par_x=OptRange(0, 1, True),
+                           strat_par_y=OptRange(0, 1, True))
 
-        t_par = TraceParameter(sim_time=10000, type_num=4, int_mean=500, num_mean=25, mean_present=50, seed=[35, 64])
-        f_par = FitnessParameter(time_per_task=1)
+        t_par = TraceParameter(sim_time=10000, type_num=2, int_mean=100, num_mean=25, mean_present=50, seed=[35, 64])
+        f_par = FitnessParameter(task_op_time=1)
 
-        for m in [0.5]:
-            for pop in [10, 25, 50]:
+        for m in [0.2]:
+            for pop in [50]:
                 res = []
                 t = []
                 s = time()
@@ -52,11 +53,11 @@ class Opt:
                     print(par.map(i).__dict__)
                     t.append(time() - s)
                     res.append(i.get_fitness())
-                    if time() - s > 100:
+                    if time() - s > 1000:
                         break
                 print(str(pop) + "/" + str(m))
-                open("runs/big" + str(pop) + "m" + str(round(m * 100)) + ".csv", mode="w+", ).write(
-                    pd.Series(res, index=t).to_csv(header=False))
+                # open("runs/big" + str(pop) + "m" + str(round(m * 100)) + ".csv", mode="w+", ).write(
+                #    pd.Series(res, index=t).to_csv(header=False))
 
 
 class OptRange:
@@ -71,14 +72,14 @@ class OptParameter(SimulationParameter):
 
     def __init__(self, Nx, Ny, Nz, Lx, Ly, Lz, Cy, Ax, Vx, Ay, Vy, Az, Vz, Wli, Wsh, Wsa, Cr, Fr, rendiment, Nli,
                  Nsh,
-                 Nsa, bay_level, tech, strat):
+                 Nsa, bay_level, tech, strat, strat_par_x, strat_par_y):
         super().__init__(Nx, Ny, Nz, Lx, Ly, Lz, Cy, Ax, Vx, Ay, Vy, Az, Vz, Wli, Wsh, Wsa, Cr, Fr, rendiment, Nli,
                          Nsh,
-                         Nsa, bay_level, tech, strat)
+                         Nsa, bay_level, tech, strat, strat_par_x, strat_par_y)
 
     def map(self, solution) -> SimulationParameter:
         assert isinstance(solution, list)
-        ret = SimulationParameter(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        ret = SimulationParameter(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
         i = 0
         for p in self.__dict__:
             if isinstance(self.__dict__[p], OptRange):

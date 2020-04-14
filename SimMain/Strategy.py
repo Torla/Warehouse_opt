@@ -49,7 +49,7 @@ class Strategy:
             selection = Strategy.__dict__["strategy" + str(parameter.strategy)] \
                 .__func__(event.param["task"], event.sim, parameter)
         except KeyError:
-            Logger.log("Strategy or technology selected is not defined", type=Logger.Type.FAIL)
+            event.sim.logger.log("Strategy or technology selected is not defined", type=event.sim.Logger.Type.FAIL)
             exit(-1)
         return Strategy.implement(event.param["task"], selection, event.sim, parameter)
 
@@ -63,7 +63,7 @@ class Strategy:
             return Strategy.__dict__["implement" + str(parameter.tech)] \
                 .__func__(task, channel_id, sim, parameter)
         except KeyError:
-            Logger.log("Technology selected is not defined", type=Logger.Type.FAIL)
+            sim.logger.log("Technology selected is not defined", type=sim.Logger.Type.FAIL)
             exit(-1)
 
     @staticmethod
@@ -622,6 +622,8 @@ class Strategy:
 
         return r
 
+    # todo closest channel and closets level
+
     # random channel select
     @staticmethod
     def strategy0(task, sim, parameter) -> int:
@@ -633,7 +635,7 @@ class Strategy:
             channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
                     len(x.items) == 0 or x.items[0].item_type == task.item.item_type))
             if len(channels) == 0:
-                sim.logger.log("No place to deposit " + str(task.item), type=Logger.Type.WARNING)
+                sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task)
             return random.choice(channels).id
         elif task.order_type == OrderType.RETRIEVAL:
@@ -641,7 +643,7 @@ class Strategy:
             channels = sim.find_res(lambda x: isinstance(x, Channel) and
                                               len(x.items) > 0 and x.items[0].item_type == task.item.item_type)
             if len(channels) == 0:
-                sim.logger.log("No item to recover " + str(task.item), type=Logger.Type.WARNING)
+                sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task)
             ret = random.choice(channels)
             return ret.id
@@ -653,30 +655,41 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         assert isinstance(sim, Simulation)
 
-        section = random.randint(0, len(sim.find_res(lambda x: isinstance(x, Lift), free=False)))
+        def w_dist(x, y, par):
+            assert isinstance(par, SimulationParameter)
+            return abs(x.level - y.level) * par.strategy_par_y + abs(
+                x.x - y.x) * par.strategy_par_x
+
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
+        channels = []
 
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel
-            channels = sorted(sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
+            channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
                     len(x.items) == 0 or x.items[
-                0].item_type == task.item.item_type) and x.position.section == section),
-                              key=lambda x: distance(x.position, bay.position, sim.get_status().parameter))
+                0].item_type == task.item.item_type))
+
+            min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
+            min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
+            channels = list(
+                filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
             if len(channels) == 0:
                 sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task)
-            return channels[0].id
         elif task.order_type == OrderType.RETRIEVAL:
 
-            channels = sorted(sim.find_res(lambda x: isinstance(x, Channel) and
-                                                     len(x.items) > 0 and x.items[
-                                                         0].item_type == task.item.item_type and x.position.section == section),
-                              key=lambda x: distance(x.position, bay.position, sim.get_status().parameter))
+            channels = sim.find_res(lambda x: isinstance(x, Channel) and
+                                              len(x.items) > 0 and x.items[
+                                                  0].item_type == task.item.item_type)
+            min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
+            min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
+            channels = list(
+                filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
             if len(channels) == 0:
                 sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task)
-            ret = channels[0]
-            return ret.id
+        ret = random.choice(channels)
+        return ret.id
 
     # emptier
     @staticmethod

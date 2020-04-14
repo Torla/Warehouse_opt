@@ -15,6 +15,8 @@ class Monitor:
             self.time_per_task = np.inf
             self.energy_consumed = np.inf
             self.parr_ratio = 0
+            # todo add area, volume, num_res (separato per tipo), tempo ciclo (quello strano), energia per ciclo (if
+            #  easy), utilizzazione (per tipo)
 
         def __str__(self):
             return "Average task wait: " + str(self.mean_task_wait) \
@@ -42,6 +44,7 @@ class Monitor:
         res.working_time = self.sim.working_time if self.sim.working_time != 0 else self.sim.now
         res.mean_task_op_time = res.working_time / len(self.tasks)
         res.energy_consumed = sum(
-            [i.energyConsumed for i in list(filter(lambda x: isinstance(x, MovableResource), self.sim.all_res.values()))])
+            [i.energyConsumed for i in
+             list(filter(lambda x: isinstance(x, MovableResource), self.sim.all_res.values()))])
         res.parr_ratio = res.time_per_task / res.mean_task_op_time
         return res

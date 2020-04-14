@@ -10,7 +10,7 @@ from SimMain.Warehouse import Warehouse
 
 class Test:
     @staticmethod
-    def test(parameter, trace_parameter):
+    def test(parameter, trace_parameter, log=False):
         class Status:
             def __init__(self, parameter, monitor):
                 self.parameter = parameter
@@ -18,7 +18,7 @@ class Test:
 
         sim = Simulation(Status(parameter, None))
         sim.__status__.monitor = Monitor(sim)
-        sim.logger.enable(False)
+        sim.logger.enable(log)
         # env = simpy.RealtimeEnvironment(0, 0.1, False)
         # warehouse = Warehouse(env, parameter, trace_load("trace1.json"))
         warehouse = Warehouse(sim, parameter, trace_generator(trace_parameter))
@@ -43,6 +43,7 @@ if __name__ == '__main__':
                               Cr=0.02, Fr=1.15, rendiment=0.9,
                               Nli=2, Nsh=2, Nsa=4,
                               bay_level=1.5,
-                              tech=2, strat=1)
+                              tech=2, strat=1, strat_par_x=0.5, strat_par_y=0.5)
+    # todo add
     t_par = TraceParameter(sim_time=20000, type_num=2, int_mean=100, num_mean=50, mean_present=50, seed=[35, 64])
-    Test.test(parameter=par, trace_parameter=t_par)
+    Test.test(parameter=par, trace_parameter=t_par, log=True)

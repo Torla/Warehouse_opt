@@ -83,11 +83,9 @@ def distance(p1, p2, parameter) -> float:
     assert isinstance(p2, Position)
     if p1.section != p2.section and p1.section is not None and p2.section is not None:
         return np.inf
-    if p1.level != p2.level:
-        ret = abs(p1.level - p2.level) * parameter.Ly
-    elif p1.x != p2.x:
-        ret = abs(p1.x - p2.x) * parameter.Lx
-    else:
-        ret = abs(p1.z - p2.z) * parameter.Lz
+
+    ret = abs(p1.level - p2.level) * parameter.Ly
+    ret += abs(p1.x - p2.x) * parameter.Lx
+    ret += abs(p1.z - p2.z) * parameter.Lz
 
     return ret
