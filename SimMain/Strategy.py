@@ -668,26 +668,28 @@ class Strategy:
             channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
                     len(x.items) == 0 or x.items[
                 0].item_type == task.item.item_type))
+            if len(channels) == 0:
+                sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
+                raise Strategy.NoPlaceTODeposit(task)
 
             min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
             min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
             channels = list(
                 filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
-            if len(channels) == 0:
-                sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
-                raise Strategy.NoPlaceTODeposit(task)
+
         elif task.order_type == OrderType.RETRIEVAL:
 
             channels = sim.find_res(lambda x: isinstance(x, Channel) and
                                               len(x.items) > 0 and x.items[
                                                   0].item_type == task.item.item_type)
+            if len(channels) == 0:
+                sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
+                raise Strategy.NoItemToTake(task)
             min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
             min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
             channels = list(
                 filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
-            if len(channels) == 0:
-                sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
-                raise Strategy.NoItemToTake(task)
+
         ret = random.choice(channels)
         return ret.id
 

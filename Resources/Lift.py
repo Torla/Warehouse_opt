@@ -22,6 +22,8 @@ class Lift(MovableResource, Performer):
         self.add_mapping(ActionType.MOVE, self.move_lift)
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
+        self.monitor = self.sim.get_status().monitor
+        self.util = 0
         # for cycle time
         self.cycle_start = 0
         self.last_op = None
@@ -31,9 +33,10 @@ class Lift(MovableResource, Performer):
         return "Lift(" + str(self.id) + ")"
 
     def go_to(self, level):
-        return self.env.timeout(
-            self.move(self.env, Position(self.position.section, level, self.position.x, self.position.z),
-                      self.sim.get_status().parameter))
+        time = self.move(self.env, Position(self.position.section, level, self.position.x, self.position.z),
+                         self.sim.get_status().parameter)
+        self.util += time
+        return self.env.timeout(time)
 
     def move_lift(self, action, sim, taken_inf):
         assert (isinstance(sim, Simulation))
@@ -45,7 +48,6 @@ class Lift(MovableResource, Performer):
         elif "auto_sat" in action.param:
             action.param["level"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.level
         yield self.go_to(action.param["level"])
-
         if action.param["level"] == sim.find_res(lambda x: isinstance(x, Bay))[0].position.level:
             actual_task = OrderType.DEPOSIT if list(filter(lambda x: isinstance(x, Satellite), taken_inf))[
                                                    0].content is None else OrderType.RETRIEVAL
@@ -70,6 +72,7 @@ class Lift(MovableResource, Performer):
             raise Performer.IllegalAction("Lift getting None item")
         sim.logger.log(str(self.content), 15)
         yield self.env.timeout(self.TIME_TO_PICKUP)
+        self.util += self.TIME_TO_PICKUP
         return
 
     def drop(self, action, sim, taken_inf):
@@ -86,4 +89,5 @@ class Lift(MovableResource, Performer):
         sim.logger.log(str(self.content), 15)
         self.content = None
         yield self.env.timeout(self.TIME_TO_DROP)
+        self.util += self.TIME_TO_DROP
         return

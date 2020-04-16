@@ -21,6 +21,9 @@ class Shuttle(MovableResource, Performer):
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
 
+        self.monitor = self.sim.get_status().monitor
+        self.util = 0
+
     @overrides
     def __str__(self):
         return "Shuttle(" + str(self.id) + ")"
@@ -48,6 +51,7 @@ class Shuttle(MovableResource, Performer):
         if self.content is None:
             raise Performer.IllegalAction("Shuttle getting None item")
         sim.logger.log(str(self.content), 15)
+        self.util += self.TIME_TO_PICKUP
         yield self.env.timeout(self.TIME_TO_PICKUP)
         return
 
@@ -65,12 +69,15 @@ class Shuttle(MovableResource, Performer):
         self.content.position.z = 0
         sim.logger.log(str(self.content), 15)
         self.content = None
+        self.util += self.TIME_TO_DROP
         yield self.env.timeout(self.TIME_TO_DROP)
         return
 
     def go_to(self, x):
+        time = self.move(self.env, Position(self.position.section, self.position.level, x, self.position.z),
+                         self.sim.get_status().parameter)
+        self.util += time
         return self.env.timeout(
-            self.move(self.env, Position(self.position.section, self.position.level, x, self.position.z),
-                      self.sim.get_status().parameter))
+            time)
 
 

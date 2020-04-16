@@ -117,6 +117,8 @@ SimMain:
             energy_consumed -> tot energy consumed in KW/h
             area
             volume
+            single_CT
+            double_CT
             
 
     Strategy:

@@ -33,13 +33,13 @@ class Opt:
                            Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                            Wli=1850, Wsh=850, Wsa=350,
                            Cr=0.02, Fr=1.15, rendiment=0.9,
-                           Nli=OptRange(1, 10), Nsh=OptRange(1, 4), Nsa=OptRange(1, 4),
+                           Nli=1, Nsh=OptRange(1, 4), Nsa=OptRange(1, 4),
                            bay_level=OptRange(0, 5, True),
-                           tech=OptRange(0, 2), strat=1, strat_par_x=OptRange(0, 1, True),
+                           tech=2, strat=1, strat_par_x=OptRange(0, 1, True),
                            strat_par_y=OptRange(0, 1, True))
 
-        t_par = TraceParameter(sim_time=5000, type_num=2, int_mean=50, start_fullness=0.1, seed=[35, 64])
-        f_par = FitnessParameter(time_per_task=1, num_lifts=3)
+        t_par = TraceParameter(sim_time=5000, type_num=2, int_mean=50, start_fullness=0.2, seed=[35, 64])
+        f_par = FitnessParameter(task_op_time=1)
 
         for m in [0.2]:
             for pop in [50]:
@@ -105,7 +105,8 @@ class OptParameter(SimulationParameter):
 class FitnessParameter(Monitor.Results):
 
     def __init__(self, mean_task_wait=0, task_op_time=0, task_tot_time=0, working_time=0, time_per_task=0,
-                 energy_consumed=0., area=0, volume=0, num_lifts=0, num_shuttle=0, num_sats=0):
+                 energy_consumed=0., area=0, volume=0, num_lifts=0, num_shuttle=0, num_sats=0, single_CT=0,
+                 double_CT=0, single_CT_E=0, double_CT_E=0):
         super().__init__()
         self.mean_task_wait = mean_task_wait
         self.mean_task_op_time = task_op_time
@@ -118,6 +119,10 @@ class FitnessParameter(Monitor.Results):
         self.num_lifts = num_lifts
         self.num_shuttles = num_shuttle
         self.num_sats = num_sats
+        self.single_CT = single_CT
+        self.double_CT = double_CT
+        self.single_CT_E = single_CT_E
+        self.double_CT_E = double_CT_E
 
 
 class Solution(List):

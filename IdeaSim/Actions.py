@@ -15,6 +15,7 @@ class Action:
         self.id = next(self.new_id)
         assert isinstance(action_graph, ActionsGraph)
         action_graph.actions[self.id] = self
+        self.action_graph = action_graph
         self.actionType = action_type
         self.who = who
         assert isinstance(param, dict) or param is None
@@ -62,8 +63,11 @@ class Branch(Action):
 
 
 class ActionsGraph:
+    new_id = itertools.count()
+
     def __init__(self, sim):
         assert isinstance(sim, Simulation.Simulation)
+        self.id = next(self.new_id)
         self.sim = sim
         self.actions = {}
         self.global_mutex_property = False
@@ -116,7 +120,7 @@ class Executor:
 
         self.sim.manager.activate()
 
-        #monitor
+        # monitor
 
         self.sim.get_status().monitor.tasks.append([self.sim.now - start])
 
@@ -156,7 +160,7 @@ class Executor:
         try:
             if action.condition is not None:
                 assert callable(action.condition)
-                if not (action.condition(sim,taken_inf)):
+                if not (action.condition(sim, taken_inf)):
                     if action.on_false is not None:
                         assert callable(action.on_false)
                         yield completed_flags[action.id].put(float('inf'))

@@ -26,6 +26,9 @@ class Satellite(MovableResource, Performer):
         self.add_mapping(ActionType.DROP_TO_BAY, self.drop_to_bay)
         self.add_mapping(ActionType.GET_FROM_BAY, self.get_from_bay)
 
+        self.monitor = self.sim.get_status().monitor
+        self.util = 0
+
     @overrides
     def __str__(self):
         return "Satellite(" + str(self.id) + ")"
@@ -35,9 +38,11 @@ class Satellite(MovableResource, Performer):
         return self.weight + (self.content.weight if self.content is not None else 0)
 
     def go_to(self, z):
+        time = self.move(self.sim, Position(self.position.section, self.position.level, self.position.x, z),
+                         self.sim.get_status().parameter)
+        self.util += time
         return self.env.timeout(
-            self.move(self.sim, Position(self.position.section, self.position.level, self.position.x, z),
-                      self.sim.get_status().parameter))
+            time)
 
     def move_satellite(self, action, sim, taken_inf):
         assert (isinstance(sim, Simulation))
@@ -52,6 +57,7 @@ class Satellite(MovableResource, Performer):
         self.content = list(filter(lambda x: x.id == action.param["channel_id"], taken_inf))[0].items.pop()
         if not isinstance(self.content, Item.Item):
             raise Performer.IllegalAction("Satellite pickup non Item")
+        self.util += self.TIME_TO_PICKUP_FROM_CHANNEL
         yield self.env.timeout(self.TIME_TO_PICKUP_FROM_CHANNEL)
         return
 
@@ -61,6 +67,7 @@ class Satellite(MovableResource, Performer):
         if self.content is None:
             raise Performer.IllegalAction("Satellite drop None Item to channel")
         self.content = None
+        self.util += self.TIME_TO_DROP_TO_CHANNEL
         yield self.env.timeout(self.TIME_TO_DROP_TO_CHANNEL)
         return
 
@@ -68,6 +75,7 @@ class Satellite(MovableResource, Performer):
         if self.content is None:
             raise Performer.IllegalAction("Satellite drop None Item to bay")
         self.content = None
+        self.util += self.TIME_TO_DROP_TO_BAY
         yield self.env.timeout(self.TIME_TO_DROP_TO_BAY)
         return
 
@@ -75,6 +83,7 @@ class Satellite(MovableResource, Performer):
         self.content = action.param["item"]
         if not isinstance(self.content, Item.Item):
             raise Performer.IllegalAction("Satellite pickup non Item from bay")
+        self.util += self.TIME_TO_PICKUP_FROM_BAY
         yield self.env.timeout(self.TIME_TO_PICKUP_FROM_BAY)
         return
 
