@@ -14,9 +14,12 @@ class Monitor:
             self.working_time = np.inf
             self.time_per_task = np.inf
             self.energy_consumed = np.inf
-            self.area = 0
-            self.volume = 0
-            # todo add area, volume, num_res (separato per tipo), tempo ciclo (quello strano), energia per ciclo (if
+            self.area = np.inf
+            self.volume = np.inf
+            self.num_lifts = 0
+            self.num_shuttles = 0
+            self.num_sats = 0
+            # todo num_res (separato per tipo), tempo ciclo (quello strano), energia per ciclo (if
             #  easy), utilizzazione (per tipo)
 
         def __str__(self):
@@ -28,6 +31,9 @@ class Monitor:
                    + "\nTime per task: " + str(self.time_per_task) \
                    + "\nArea: " + str(self.area) \
                    + "\nVolume: " + str(self.volume) \
+                   + "\nLifts: " + str(self.num_lifts) \
+                   + "\nShuttles: " + str(self.num_shuttles) \
+                   + "\nSats: " + str(self.num_sats) \
 
 
     def __init__(self, sim):
@@ -54,5 +60,9 @@ class Monitor:
 
         res.area = par.Nx * par.Nz
         res.volume = res.area * par.Ny
+
+        res.num_lifts = par.Nli
+        res.num_shuttles = par.Nsh
+        res.num_sats = par.Nsa
 
         return res

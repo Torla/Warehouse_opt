@@ -21,7 +21,7 @@ class Test:
         sim.logger.enable(log)
         # env = simpy.RealtimeEnvironment(0, 0.1, False)
         # warehouse = Warehouse(env, parameter, trace_load("trace1.json"))
-        warehouse = Warehouse(sim, parameter, trace_generator(trace_parameter))
+        warehouse = Warehouse(sim, parameter, trace_parameter)
         sim.run()
 
         sim.logger.log(str(sim.get_status().monitor.get_result()))
@@ -43,7 +43,7 @@ if __name__ == '__main__':
                               Cr=0.02, Fr=1.15, rendiment=0.9,
                               Nli=2, Nsh=2, Nsa=4,
                               bay_level=1.5,
-                              tech=2, strat=1, strat_par_x=0.5, strat_par_y=0.5)
+                              tech=2, strat=1, strat_par_x=1, strat_par_y=1)
     # todo add
-    t_par = TraceParameter(sim_time=20000, type_num=2, int_mean=100, num_mean=50, mean_present=50, seed=[35, 64])
+    t_par = TraceParameter(sim_time=20000, type_num=2, int_mean=100, start_fullness=0.9, seed=[35, 64])
     Test.test(parameter=par, trace_parameter=t_par, log=True)
