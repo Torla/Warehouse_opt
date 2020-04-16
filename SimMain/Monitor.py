@@ -19,6 +19,8 @@ class Monitor:
             self.num_lifts = 0
             self.num_shuttles = 0
             self.num_sats = 0
+            self.single_CT = 0
+            self.double_CT = 0
             # todo num_res (separato per tipo), tempo ciclo (quello strano), energia per ciclo (if
             #  easy), utilizzazione (per tipo)
 
@@ -34,12 +36,15 @@ class Monitor:
                    + "\nLifts: " + str(self.num_lifts) \
                    + "\nShuttles: " + str(self.num_shuttles) \
                    + "\nSats: " + str(self.num_sats) \
-
+                   + "\nSingle cycle: " + str(self.single_CT) \
+                   + "\nDouble cycle: " + str(self.double_CT)
 
     def __init__(self, sim):
         assert isinstance(sim, Simulation)
         self.sim = sim
         self.tasks = []
+        self.single_cycle = []
+        self.double_cycle = []
         self.working_time = 0
 
     def get_result(self) -> Results:
@@ -64,5 +69,8 @@ class Monitor:
         res.num_lifts = par.Nli
         res.num_shuttles = par.Nsh
         res.num_sats = par.Nsa
+
+        res.single_CT = np.average(self.single_cycle)
+        res.double_CT = np.average(self.double_cycle)
 
         return res

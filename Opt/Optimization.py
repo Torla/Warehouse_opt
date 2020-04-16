@@ -38,7 +38,7 @@ class Opt:
                            tech=OptRange(0, 2), strat=1, strat_par_x=OptRange(0, 1, True),
                            strat_par_y=OptRange(0, 1, True))
 
-        t_par = TraceParameter(sim_time=5000, type_num=2, int_mean=50, start_fullness=0.5, seed=[35, 64])
+        t_par = TraceParameter(sim_time=5000, type_num=2, int_mean=50, start_fullness=0.1, seed=[35, 64])
         f_par = FitnessParameter(time_per_task=1, num_lifts=3)
 
         for m in [0.2]:

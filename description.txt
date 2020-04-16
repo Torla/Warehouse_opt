@@ -133,8 +133,7 @@ Trace:
         type_num -> number of type of pallet
         sim_time -> simulation time
         seed -> seed for generation
-        mean_present -> desired min number of pallet in warehouse at any time
-        num_mean -> non used
+        start_fullness -> starting fraction of full ubik (filled with the selected strategy)
         int_mean -> mean time between task (generate based on a exponential distribution)
 
 Task:

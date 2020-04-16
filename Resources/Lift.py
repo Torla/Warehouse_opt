@@ -2,10 +2,12 @@ from overrides import overrides
 
 from IdeaSim.Simulation import Simulation
 from Resources.ActionType import ActionType
+from Resources.Bay import Bay
 from Resources.Movement import MovableResource, Position
 from IdeaSim.Resources import Performer
 from Resources.Satellite import Satellite
 from Resources.Shuttle import Shuttle
+from Task.Task import OrderType
 
 
 class Lift(MovableResource, Performer):
@@ -20,6 +22,9 @@ class Lift(MovableResource, Performer):
         self.add_mapping(ActionType.MOVE, self.move_lift)
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
+        # for cycle time
+        self.cycle_start = 0
+        self.last_op = None
 
     @overrides
     def __str__(self):
@@ -40,6 +45,17 @@ class Lift(MovableResource, Performer):
         elif "auto_sat" in action.param:
             action.param["level"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.level
         yield self.go_to(action.param["level"])
+
+        if action.param["level"] == sim.find_res(lambda x: isinstance(x, Bay))[0].position.level:
+            actual_task = OrderType.DEPOSIT if list(filter(lambda x: isinstance(x, Satellite), taken_inf))[
+                                                   0].content is None else OrderType.RETRIEVAL
+            if (self.last_op == OrderType.DEPOSIT and actual_task == OrderType.DEPOSIT) or (
+                    self.last_op == OrderType.RETRIEVAL and actual_task == OrderType.RETRIEVAL):
+                self.sim.get_status().monitor.single_cycle.append(self.sim.now - self.cycle_start)
+            elif self.last_op == OrderType.DEPOSIT and actual_task == OrderType.RETRIEVAL:
+                self.sim.get_status().monitor.double_cycle.append(self.sim.now - self.cycle_start)
+            self.cycle_start = self.sim.now
+            self.last_op = actual_task
         return
 
     def pickup(self, action, sim, taken_inf):
