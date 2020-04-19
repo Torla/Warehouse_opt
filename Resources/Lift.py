@@ -26,6 +26,7 @@ class Lift(MovableResource, Performer):
         self.util = 0
         # for cycle time
         self.cycle_start = 0
+        self.cycle_start_energy = 0
         self.last_op = None
 
     @overrides
@@ -54,9 +55,17 @@ class Lift(MovableResource, Performer):
             if (self.last_op == OrderType.DEPOSIT and actual_task == OrderType.DEPOSIT) or (
                     self.last_op == OrderType.RETRIEVAL and actual_task == OrderType.RETRIEVAL):
                 self.sim.get_status().monitor.single_cycle.append(self.sim.now - self.cycle_start)
+                self.sim.get_status().monitor.single_cycle_e.append(sum(
+                    list(map(lambda x: x.energyConsumed,
+                             filter(lambda x: isinstance(x, MovableResource), taken_inf)))) - self.cycle_start_energy)
             elif self.last_op == OrderType.DEPOSIT and actual_task == OrderType.RETRIEVAL:
                 self.sim.get_status().monitor.double_cycle.append(self.sim.now - self.cycle_start)
+                self.sim.get_status().monitor.double_cycle_e.append(sum(
+                    list(map(lambda x: x.energyConsumed,
+                             filter(lambda x: isinstance(x, MovableResource), taken_inf)))) - self.cycle_start_energy)
             self.cycle_start = self.sim.now
+            self.cycle_start_energy = sum(
+                list(map(lambda x: x.energyConsumed, filter(lambda x: isinstance(x, MovableResource), taken_inf))))
             self.last_op = actual_task
         return
 

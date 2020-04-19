@@ -11,26 +11,26 @@ from Resources.Shuttle import Shuttle
 class Monitor:
     class Results:
         def __init__(self):
-            self.mean_task_wait = np.inf
-            self.mean_task_op_time = np.inf
-            self.mean_task_tot_time = np.inf
-            self.working_time = np.inf
-            self.time_per_task = np.inf
-            self.energy_consumed = np.inf
-            self.area = np.inf
-            self.volume = np.inf
-            self.num_lifts = 0
-            self.num_shuttles = 0
-            self.num_sats = 0
-            self.lifts_util = 0
-            self.shut_util = 0
-            self.sat_util = 0
-            self.single_CT = 0
-            self.double_CT = 0
-            self.single_CT_E = 0
-            self.double_CT_E = 0
+            self.mean_task_wait = 1000000000
+            self.mean_task_op_time = 1000000000
+            self.mean_task_tot_time = 1000000000
+            self.working_time = 1000000000
+            self.time_per_task = 1000000000
+            self.energy_consumed = 1000000000
+            self.area = 1000000000
+            self.volume = 1000000000
+            self.num_lifts = 1000000000
+            self.num_shuttles = 1000000000
+            self.num_sats = 1000000000
+            self.lifts_util = 1000000000
+            self.shut_util = 1000000000
+            self.sat_util = 1000000000
+            self.single_CT = 1000000000
+            self.double_CT = 1000000000
+            self.single_CT_E = 1000000000
+            self.double_CT_E = 1000000000
             # todo energia per ciclo (if
-            #  easy), utilizzazione (per tipo)
+            #  easy)
 
         def __str__(self):
             return "Average task wait: " + str(self.mean_task_wait) \
@@ -87,14 +87,14 @@ class Monitor:
 
         res.single_CT = np.average(self.single_cycle)
         res.double_CT = np.average(self.double_cycle)
-        # res.single_CT_E = np.average(self.single_cycle_e)
-        # res.double_CT_E = np.average(self.double_cycle_e)
+        res.single_CT_E = np.average(self.single_cycle_e)
+        res.double_CT_E = np.average(self.double_cycle_e)
 
         res.lifts_util = np.average(
-            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Lift))]) / res.working_time
+            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
         res.shut_util = np.average(
-            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Shuttle))]) / res.working_time
+            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
         res.sat_util = np.average(
-            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Satellite))]) / res.working_time
+            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Satellite), False)]) / res.working_time
 
         return res

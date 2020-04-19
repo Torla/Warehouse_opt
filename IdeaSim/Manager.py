@@ -2,7 +2,7 @@ from simpy import Container
 
 from IdeaSim import Simulation, Event
 
-# todo add mapping
+
 from IdeaSim import Actions
 
 

@@ -21,7 +21,6 @@ def trace_generator(trace_par) -> {}:
 
         item_type = "Tipo" + str(randint(0, np.random.randint(0, trace_par.type_num)))
 
-        task = None
         if item_type not in warehouse or warehouse[item_type] < 1:
             task = Task(Item(item_type), OrderType.DEPOSIT)
             if item_type in warehouse:

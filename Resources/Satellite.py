@@ -7,7 +7,6 @@ from Resources.Movement import MovableResource, Position
 from IdeaSim.Resources import Performer
 
 
-
 class Satellite(MovableResource, Performer):
     def __init__(self, env, position, acc, max_v, par):
         MovableResource.__init__(self, env, position, acc, max_v, par)
@@ -86,6 +85,3 @@ class Satellite(MovableResource, Performer):
         self.util += self.TIME_TO_PICKUP_FROM_BAY
         yield self.env.timeout(self.TIME_TO_PICKUP_FROM_BAY)
         return
-
-
-

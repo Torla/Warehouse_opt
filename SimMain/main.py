@@ -45,5 +45,5 @@ if __name__ == '__main__':
                               bay_level=1.5,
                               tech=2, strat=1, strat_par_x=1, strat_par_y=1)
     # todo add
-    t_par = TraceParameter(sim_time=10000, type_num=2, int_mean=100, start_fullness=0.2, seed=[998, 123])
+    t_par = TraceParameter(sim_time=10000, type_num=2, int_mean=50, start_fullness=0.2, seed=[998, 123])
     Test.test(parameter=par, trace_parameter=t_par, log=True)
