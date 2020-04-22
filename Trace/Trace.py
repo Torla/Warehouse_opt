@@ -40,6 +40,5 @@ class TraceParameter:
         self.types = types
         self.sim_time = sim_time
         self.seed = seed
-        # todo add num objects
         self.start_fullness = start_fullness
         self.int_mean = int_mean

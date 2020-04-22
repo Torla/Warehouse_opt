@@ -174,12 +174,14 @@ class Executor:
                     res = yield sim.get_res(action.who, action.sort_by)
                     taken_inf.append(res)
                     yield completed_flags[action.id].put(float('inf'))
+                    res.last_blocked = sim.now
                     sim.logger.log("blocking  " + str(
                         res),
                                    7)
                 else:
                     yield sim.get_res_by_id(action.who)
                     taken_inf.append(sim.find_res_by_id(action.who, free=False))
+                    sim.find_res_by_id(action.who, free=False).last_blocked = sim.now
                     yield completed_flags[action.id].put(float('inf'))
                     sim.logger.log("blocking  " + str(
                         sim.find_res_by_id(action.who, free=False)),
@@ -196,6 +198,8 @@ class Executor:
                 inf = list(filter(lambda x: x.id == action.who, taken_inf))[0]
                 yield sim.put_res(inf)
                 taken_inf.remove(inf)
+                sim.find_res_by_id(action.who, free=False) \
+                    .blocked_time += sim.now - sim.find_res_by_id(action.who, free=False).last_blocked
                 yield completed_flags[action.id].put(float('inf'))
                 # manager is activated after anything is free
                 sim.logger.log("Free " + str(

@@ -22,6 +22,9 @@ class Monitor:
             self.num_lifts = 1000000000
             self.num_shuttles = 1000000000
             self.num_sats = 1000000000
+            self.lifts_util_proc = 1000000000
+            self.shut_util_proc = 1000000000
+            self.sat_util_proc = 1000000000
             self.lifts_util = 1000000000
             self.shut_util = 1000000000
             self.sat_util = 1000000000
@@ -45,9 +48,9 @@ class Monitor:
                    + "\nLifts: " + str(self.num_lifts) \
                    + "\nShuttles: " + str(self.num_shuttles) \
                    + "\nSats: " + str(self.num_sats) \
-                   + "\nLifts util: " + str(self.lifts_util) \
-                   + "\nShuttles util: " + str(self.shut_util) \
-                   + "\nSats util: " + str(self.sat_util) \
+                   + "\nLifts util: " + str(self.lifts_util_proc) + " / " + str(self.lifts_util)\
+                   + "\nShuttles util: " + str(self.shut_util_proc) + " / " + str(self.shut_util)\
+                   + "\nSats util: " + str(self.sat_util_proc) + " / " + str(self.sat_util) \
                    + "\nSingle cycle: " + str(self.single_CT) + " var: " + str(self.single_CT_V) \
                    + "\nDouble cycle: " + str(self.double_CT) + " var: " + str(self.double_CT_V) \
                    + "\nSingle cycle energy: " + str(self.single_CT_E) \
@@ -93,11 +96,17 @@ class Monitor:
         res.single_CT_E = np.average(self.single_cycle_e)
         res.double_CT_E = np.average(self.double_cycle_e)
 
-        res.lifts_util = np.average(
+        res.lifts_util_proc = np.average(
             [i.util for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
-        res.shut_util = np.average(
+        res.shut_util_proc = np.average(
             [i.util for i in self.sim.find_res(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
-        res.sat_util = np.average(
+        res.sat_util_proc = np.average(
             [i.util for i in self.sim.find_res(lambda x: isinstance(x, Satellite), False)]) / res.working_time
+        res.lifts_util = np.average(
+            [i.blocked_time for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
+        res.shut_util = np.average(
+            [i.blocked_time for i in self.sim.find_res(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
+        res.sat_util = np.average(
+            [i.blocked_time for i in self.sim.find_res(lambda x: isinstance(x, Satellite), False)]) / res.working_time
 
         return res

@@ -622,7 +622,6 @@ class Strategy:
 
         return r
 
-    # todo closest channel and closets level
 
     # random channel select
     @staticmethod

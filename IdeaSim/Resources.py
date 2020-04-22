@@ -19,6 +19,9 @@ class Resource:
         self.sim = sim
         self.id = next(self.new_id)
 
+        self.blocked_time = 0
+        self.last_blocked = None
+
     def __str__(self) -> str:
         return str(self.id)
 
@@ -27,6 +30,8 @@ class Performer(Resource):
     def __init__(self, sim):
         super().__init__(sim)
         self.action_map = {}
+
+
 
     class IllegalAction(Exception):
         def __init__(self, msg):
