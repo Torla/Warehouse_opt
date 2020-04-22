@@ -42,12 +42,12 @@ class Opt:
         f_par = FitnessParameter(task_op_time=1, energy_consumed=0.5)
 
         for m in [0.2]:
-            for pop in [50]:
+            for pop in [20]:
                 res = []
                 t = []
                 s = time()
                 from Opt.Genetic import opt
-                for i in opt(par, t_par, f_par, pop, 0.2, m, 0.1, 0.5, 4):
+                for i in opt(par, t_par, f_par, pop, 0.2, m, 0.1, 0.5, 2):
                     print("t: " + str(time() - s))
                     print(i.get_fitness())
                     print(par.map(i).__dict__)
@@ -138,8 +138,8 @@ class Solution(List):
     p_pool = None
 
     def __init__(self, opt_par, t_par, fitness_par, array=None) -> None:
-        #        assert isinstance(opt_par, OptParameter)
-        #        assert isinstance(fitness_par, FitnessParameter)
+        assert isinstance(opt_par, OptParameter)
+        assert isinstance(fitness_par, FitnessParameter)
         self.opt_par = opt_par
         self.t_par = t_par
         self.fitness_par = fitness_par
@@ -185,7 +185,10 @@ class Solution(List):
                     w.writeheader()
                 w.writerow(d)
             for p in res.__dict__:
-                ret += (res.__dict__[p] * self.fitness_par.__dict__[p]) / len(results)
+                if isinstance(p, int) or isinstance(p, float):
+                    ret += (res.__dict__[p] * self.fitness_par.__dict__[p]) / len(results)
+                else:
+                    ret += 10000000000
         self.saved = True
         return ret
 
