@@ -27,15 +27,16 @@ class Monitor:
             self.sat_util = 1000000000
             self.single_CT = 1000000000
             self.double_CT = 1000000000
+            self.single_CT_V = 1000000000
+            self.double_CT_V = 1000000000
             self.single_CT_E = 1000000000
             self.double_CT_E = 1000000000
-            # todo energia per ciclo (if
-            #  easy)
 
         def __str__(self):
             return "Average task wait: " + str(self.mean_task_wait) \
                    + "\nAverage task op time: " + str(self.mean_task_op_time) \
                    + "\nAverage task tot time: " + str(self.mean_task_tot_time) \
+                   + "\nTh: " + str(3600 / self.mean_task_tot_time) \
                    + "\nEnergy consumed: " + str(self.energy_consumed / 1000) + " KW/h" \
                    + "\nWorking time: " + str(self.working_time) \
                    + "\nTime per task: " + str(self.time_per_task) \
@@ -47,8 +48,8 @@ class Monitor:
                    + "\nLifts util: " + str(self.lifts_util) \
                    + "\nShuttles util: " + str(self.shut_util) \
                    + "\nSats util: " + str(self.sat_util) \
-                   + "\nSingle cycle: " + str(self.single_CT) \
-                   + "\nDouble cycle: " + str(self.double_CT) \
+                   + "\nSingle cycle: " + str(self.single_CT) + " var: " + str(self.single_CT_V) \
+                   + "\nDouble cycle: " + str(self.double_CT) + " var: " + str(self.double_CT_V) \
                    + "\nSingle cycle energy: " + str(self.single_CT_E) \
                    + "\nDouble cycle energy: " + str(self.double_CT_E)
 
@@ -87,6 +88,8 @@ class Monitor:
 
         res.single_CT = np.average(self.single_cycle)
         res.double_CT = np.average(self.double_cycle)
+        res.single_CT_V = np.var(self.single_cycle)
+        res.double_CT_V = np.var(self.double_cycle)
         res.single_CT_E = np.average(self.single_cycle_e)
         res.double_CT_E = np.average(self.double_cycle_e)
 

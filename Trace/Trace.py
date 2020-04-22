@@ -19,7 +19,7 @@ def trace_generator(trace_par) -> {}:
     while time < trace_par.sim_time:
         time += round(np.random.exponential(scale=trace_par.int_mean))
 
-        item_type = "Tipo" + str(randint(0, np.random.randint(0, trace_par.type_num)))
+        item_type = "Tipo" + str(np.random.choice([i for i in range(0, len(trace_par.types))], p=trace_par.types))
 
         if item_type not in warehouse or warehouse[item_type] < 1:
             task = Task(Item(item_type), OrderType.DEPOSIT)
@@ -36,9 +36,10 @@ def trace_generator(trace_par) -> {}:
 
 
 class TraceParameter:
-    def __init__(self, sim_time, type_num, int_mean, start_fullness, seed) -> None:
-        self.type_num = type_num
+    def __init__(self, sim_time, types, int_mean, start_fullness, seed) -> None:
+        self.types = types
         self.sim_time = sim_time
         self.seed = seed
+        # todo add num objects
         self.start_fullness = start_fullness
         self.int_mean = int_mean
