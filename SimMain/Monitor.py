@@ -17,6 +17,7 @@ class Monitor:
             self.working_time = 1000000000
             self.time_per_task = 1000000000
             self.energy_consumed = 1000000000
+            self.energy_per_task = 1000000000
             self.area = 1000000000
             self.volume = 1000000000
             self.num_lifts = 1000000000
@@ -41,6 +42,7 @@ class Monitor:
                    + "\nAverage task tot time: " + str(self.mean_task_tot_time) \
                    + "\nTh: " + str(3600 / self.mean_task_tot_time) \
                    + "\nEnergy consumed: " + str(self.energy_consumed / 1000) + " KW/h" \
+                   + "\nEnergy consumed per tasks: " + str(self.energy_per_task) + " w/h" \
                    + "\nWorking time: " + str(self.working_time) \
                    + "\nTime per task: " + str(self.time_per_task) \
                    + "\nArea: " + str(self.area) \
@@ -81,6 +83,8 @@ class Monitor:
         res.energy_consumed = sum(
             [i.energyConsumed for i in
              list(filter(lambda x: isinstance(x, MovableResource), self.sim.all_res.values()))])
+
+        res.energy_per_task = res.energy_consumed / len(self.tasks)
 
         res.area = par.Nx * par.Nz
         res.volume = res.area * par.Ny

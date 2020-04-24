@@ -107,7 +107,7 @@ class FitnessParameter(Monitor.Results):
     def __init__(self, mean_task_wait=0, task_op_time=0, task_tot_time=0, working_time=0, time_per_task=0,
                  energy_consumed=0., area=0, volume=0, num_lifts=0, num_shuttle=0, num_sats=0, single_CT=0,
                  double_CT=0, single_CT_E=0, double_CT_E=0, single_CT_V=0, double_CT_V=0, lifts_proc=0, shut_proc=0,
-                 sat_proc=0, lifts_util=0, sat_util=0, shut_util=0):
+                 sat_proc=0, lifts_util=0, sat_util=0, shut_util=0, energy_per_task=0):
         super().__init__()
         self.mean_task_wait = mean_task_wait
         self.mean_task_op_time = task_op_time
@@ -115,6 +115,7 @@ class FitnessParameter(Monitor.Results):
         self.working_time = working_time
         self.time_per_task = time_per_task
         self.energy_consumed = energy_consumed
+        self.energy_per_task = energy_per_task
         self.area = area
         self.volume = volume
         self.num_lifts = num_lifts

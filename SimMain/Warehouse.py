@@ -79,14 +79,16 @@ class Warehouse:
             item_to_add = math.floor(parameter.Nz * parameter.Nx * parameter.Ny * trace_parameter.start_fullness)
         else:
             item_to_add = trace_parameter.start_fullness
-
-        for i in range(0, item_to_add):
+        i = 0
+        while i < item_to_add:
             task = Task(Item("Tipo" + str(
                 np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
                         OrderType.DEPOSIT)
             selection = SimMain.Strategy.Strategy.__dict__["strategy" + str(parameter.strategy)] \
                 .__func__(task, sim, parameter)
             assert isinstance(selection, int)
-            sim.find_res_by_id(selection, False).items.append(task.item)
-
+            channel = sim.find_res_by_id(selection, False)
+            channel.items.append(task.item)
+            channel.items.extend([Item(task.item.item_type) for i in range(0, channel.capacity)])
+            i += channel.capacity
         # self.monitor = Monitor(env, self.task_queue, self.parameter, self)

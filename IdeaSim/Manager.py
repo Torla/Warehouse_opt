@@ -2,15 +2,15 @@ from simpy import Container
 
 from IdeaSim import Simulation, Event
 
-
 from IdeaSim import Actions
 
 
 class Manager:
     class RetryLater(Exception):
 
-        def __init__(self, *args: object) -> None:
+        def __init__(self, *args: object, delay=None) -> None:
             super().__init__(*args)
+            self.delay = delay
 
     def __init__(self, simulation):
         assert isinstance(simulation, Simulation.Simulation)
@@ -35,8 +35,13 @@ class Manager:
         ret = None
         try:
             ret = self.type_map[event.event_type](event)
-        except Manager.RetryLater:
-            self.event_queue.append(event)
+        except Manager.RetryLater as ex:
+            if ex.delay is not None:
+                event.time = event.sim.now + ex.delay
+                event.__dispatch__()
+            else:
+                self.event_queue.append(event)
+
         if isinstance(ret, Actions.ActionsGraph):
             Actions.Executor(self.sim, ret)
 

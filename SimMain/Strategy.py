@@ -13,7 +13,6 @@ from Task.Task import Task, OrderType
 from IdeaSim.Simulation import Simulation
 from IdeaSim.Manager import Manager
 import numpy as np
-import random
 
 
 # first number:
@@ -24,11 +23,13 @@ import random
 
 class Strategy:
     class NoPlaceTODeposit(Manager.RetryLater):
-        def __init__(self, task):
+        def __init__(self, task, delay=None):
+            super().__init__(delay=delay)
             self.task = task
 
     class NoItemToTake(Manager.RetryLater):
-        def __init__(self, task):
+        def __init__(self, task, delay=None):
+            super().__init__(delay=delay)
             self.task = task
 
     class NeedToWait(Manager.RetryLater):
@@ -622,8 +623,7 @@ class Strategy:
 
         return r
 
-
-    # random channel select
+    # np.random channel select
     @staticmethod
     def strategy0(task, sim, parameter) -> int:
         assert isinstance(task, Task)
@@ -636,7 +636,7 @@ class Strategy:
             if len(channels) == 0:
                 sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task)
-            return random.choice(channels).id
+            return np.random.choice(channels).id
         elif task.order_type == OrderType.RETRIEVAL:
 
             channels = sim.find_res(lambda x: isinstance(x, Channel) and
@@ -644,7 +644,7 @@ class Strategy:
             if len(channels) == 0:
                 sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task)
-            ret = random.choice(channels)
+            ret = np.random.choice(channels)
             return ret.id
 
     # nearest to bay
@@ -656,8 +656,8 @@ class Strategy:
 
         def w_dist(x, y, par):
             assert isinstance(par, SimulationParameter)
-            return abs(x.level - y.level) * par.strategy_par_y + abs(
-                x.x - y.x) * par.strategy_par_x
+            return abs(x.level - y.level) * par.strategy_par_y * par.Ly + abs(
+                x.x - y.x) * par.strategy_par_x * par.Lx
 
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         channels = []
@@ -669,7 +669,7 @@ class Strategy:
                 0].item_type == task.item.item_type))
             if len(channels) == 0:
                 sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
-                raise Strategy.NoPlaceTODeposit(task)
+                raise Strategy.NoPlaceTODeposit(task, delay=60)
 
             min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
             min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
@@ -683,13 +683,13 @@ class Strategy:
                                                   0].item_type == task.item.item_type)
             if len(channels) == 0:
                 sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
-                raise Strategy.NoItemToTake(task)
+                raise Strategy.NoItemToTake(task, delay=60)
             min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
             min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
             channels = list(
                 filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
 
-        ret = random.choice(channels)
+        ret = np.random.choice(channels)
         return ret.id
 
     # emptier
@@ -699,7 +699,7 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         assert isinstance(sim, Simulation)
 
-        section = random.randint(0, len(sim.find_res(lambda x: isinstance(x, Lift), free=False)))
+        section = np.random.randint(0, len(sim.find_res(lambda x: isinstance(x, Lift), free=False)))
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
 
         if task.order_type == OrderType.DEPOSIT:
