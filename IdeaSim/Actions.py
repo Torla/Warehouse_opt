@@ -167,6 +167,7 @@ class Executor:
                         yield action.on_false(action, sim)
                     if isinstance(action, Branch):
                         self.branches[action.id] = False
+                    yield completed_flags[action.id].put(float('inf'))
                     return
 
             if isinstance(action, Block):
@@ -176,7 +177,7 @@ class Executor:
                     yield completed_flags[action.id].put(float('inf'))
                     res.last_blocked = sim.now
                     sim.logger.log("blocking  " + str(
-                        res),
+                        res) + " for " + str(action.action_graph.id),
                                    7)
                 else:
                     yield sim.get_res_by_id(action.who)
@@ -184,7 +185,7 @@ class Executor:
                     sim.find_res_by_id(action.who, free=False).last_blocked = sim.now
                     yield completed_flags[action.id].put(float('inf'))
                     sim.logger.log("blocking  " + str(
-                        sim.find_res_by_id(action.who, free=False)),
+                        sim.find_res_by_id(action.who, free=False)) + " for " + str(action.action_graph.id),
                                    7)
 
             elif isinstance(action, Free):
@@ -203,9 +204,7 @@ class Executor:
                 yield completed_flags[action.id].put(float('inf'))
                 # manager is activated after anything is free
                 sim.logger.log("Free " + str(
-                    sim.find_res_by_id(inf.id, free=False)
-                ),
-                               7)
+                    sim.find_res_by_id(inf.id, free=False)) + " for " + str(action.action_graph.id), 7)
                 self.sim.manager.activate()
 
             elif isinstance(action, GenerateEvent):

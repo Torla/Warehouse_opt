@@ -506,7 +506,8 @@ class Strategy:
 
             # grab shuttle
             block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
-                               after=[block_shu.id, branch_sat_shu_lf.id], branch=branch_sat_shu_on_level.id)
+                               after=[block_shu.id, branch_sat_shu_on_level.id, block_channel.id],
+                               branch=branch_sat_shu_on_level.id)
 
             security_drop = Action(r, ActionType.DROP, lambda x: isinstance(x, Lift),
                                    after=[block_lift.id, block_shu.id, block_sat.id], branch=branch_sat_shu_on_level.id)
@@ -547,7 +548,7 @@ class Strategy:
                               after=[pick_up_shu.id], branch=branch_sat_shu_lf.id)
 
             block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
-                               after=[pick_up_sat.id, free_lift.id], branch=branch_sat_shu_lf.id)
+                               after=[pick_up_sat.id, free_lift.id])
 
             security_drop = Action(r, ActionType.DROP, lambda x: isinstance(x, Lift),
                                    after=[block_lift.id], branch=branch_sat_shu_lf.id)

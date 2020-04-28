@@ -20,6 +20,7 @@ class Manager:
         self.sim.process(self.__auto_run__())
         self.activation = Container(self.sim, float('inf'), 0)
         self.last_active = -1
+        self.waiting = 0
 
     def add_mapping(self, event_type, func):
         self.type_map[event_type] = func
@@ -32,13 +33,15 @@ class Manager:
 
     def manage(self, event):
         assert isinstance(event, Event.Event)
+        self.waiting += 1
         ret = None
         try:
             ret = self.type_map[event.event_type](event)
+            self.waiting -= 1
         except Manager.RetryLater as ex:
             if ex.delay is not None:
                 event.time = event.sim.now + ex.delay
-                event.__dispatch__()
+                event.sim.process(event.__dispatch__())
             else:
                 self.event_queue.append(event)
 
