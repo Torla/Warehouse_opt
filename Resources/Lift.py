@@ -23,7 +23,7 @@ class Lift(MovableResource, Performer):
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
         self.monitor = self.sim.get_status().monitor
-        self.util = 0
+        self.util_proc = 0
         # for cycle time
         self.cycle_start = 0
         self.cycle_start_energy = 0
@@ -36,7 +36,7 @@ class Lift(MovableResource, Performer):
     def go_to(self, level):
         time = self.move(self.env, Position(self.position.section, level, self.position.x, self.position.z),
                          self.sim.get_status().parameter)
-        self.util += time
+        self.util_proc += time
         return self.env.timeout(time)
 
     def move_lift(self, action, sim, taken_inf):
@@ -81,7 +81,7 @@ class Lift(MovableResource, Performer):
             raise Performer.IllegalAction("Lift getting None item")
         sim.logger.log(str(self.content), 15)
         yield self.env.timeout(self.TIME_TO_PICKUP)
-        self.util += self.TIME_TO_PICKUP
+        self.util_proc += self.TIME_TO_PICKUP
         return
 
     def drop(self, action, sim, taken_inf):
@@ -98,5 +98,5 @@ class Lift(MovableResource, Performer):
         sim.logger.log(str(self.content), 15)
         self.content = None
         yield self.env.timeout(self.TIME_TO_DROP)
-        self.util += self.TIME_TO_DROP
+        self.util_proc += self.TIME_TO_DROP
         return

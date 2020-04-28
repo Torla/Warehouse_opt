@@ -50,8 +50,8 @@ class Monitor:
                    + "\nLifts: " + str(self.num_lifts) \
                    + "\nShuttles: " + str(self.num_shuttles) \
                    + "\nSats: " + str(self.num_sats) \
-                   + "\nLifts util: " + str(self.lifts_util_proc) + " / " + str(self.lifts_util)\
-                   + "\nShuttles util: " + str(self.shut_util_proc) + " / " + str(self.shut_util)\
+                   + "\nLifts util: " + str(self.lifts_util_proc) + " / " + str(self.lifts_util) \
+                   + "\nShuttles util: " + str(self.shut_util_proc) + " / " + str(self.shut_util) \
                    + "\nSats util: " + str(self.sat_util_proc) + " / " + str(self.sat_util) \
                    + "\nSingle cycle: " + str(self.single_CT) + " var: " + str(self.single_CT_V) \
                    + "\nDouble cycle: " + str(self.double_CT) + " var: " + str(self.double_CT_V) \
@@ -74,10 +74,12 @@ class Monitor:
         res = Monitor.Results()
 
         res.mean_task_wait = 0
+
         res.mean_task_tot_time = self.sim.now / len(self.tasks)
         res.time_per_task = np.average(self.tasks)
         if not self.sim.stop:
             self.sim.working_time += self.sim.now - self.sim.start
+            self.sim.stop = True
         res.working_time = self.sim.working_time if self.sim.working_time != 0 else self.sim.now
         res.mean_task_op_time = res.working_time / len(self.tasks)
         res.energy_consumed = sum(
@@ -101,7 +103,7 @@ class Monitor:
         res.double_CT_E = np.average(self.double_cycle_e)
 
         res.lifts_util_proc = np.average(
-            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
+            [i.util_proc for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
         res.shut_util_proc = np.average(
             [i.util for i in self.sim.find_res(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
         res.sat_util_proc = np.average(

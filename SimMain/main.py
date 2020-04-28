@@ -28,7 +28,6 @@ class Test:
         warehouse = Warehouse(sim, parameter, trace_parameter)
         sim.run(until=trace_parameter.sim_time)
 
-        sim.logger.log(str(sim.get_status().monitor.get_result()))
         return sim.get_status().monitor.get_result()
 
 
@@ -51,10 +50,10 @@ if __name__ == '__main__':
                                           Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                           Wli=1850, Wsh=850, Wsa=350,
                                           Cr=0.02, Fr=1.15, rendiment=0.9,
-                                          Nli=2, Nsh=nsh, Nsa=nsa,
+                                          Nli=1, Nsh=nsh, Nsa=nsa,
                                           bay_level=1.5,
-                                          tech=2, strat=1, strat_par_x=1, strat_par_y=1)
-                t_par = TraceParameter(sim_time=86400, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
+                                          tech=0, strat=1, strat_par_x=1, strat_par_y=1)
+                t_par = TraceParameter(sim_time=86400, types=[0.4, 0.3, 0.3], int_mean=10, start_fullness=0.5,
                                        seed=1023)
                 res = []
                 res.append(Test.test(parameter=par, trace_parameter=t_par, log=False))
@@ -129,16 +128,16 @@ if __name__ == '__main__':
                                   Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                   Wli=1850, Wsh=850, Wsa=350,
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
-                                  Nli=2, Nsh=4, Nsa=4,
+                                  Nli=1, Nsh=1, Nsa=1,
                                   bay_level=1.5,
-                                  tech=2, strat=1, strat_par_x=1, strat_par_y=1)
-        t_par = TraceParameter(sim_time=10000, types=[0.4, 0.3, 0.3], int_mean=10, start_fullness=0.9,
+                                  tech=0, strat=1, strat_par_x=1, strat_par_y=1)
+        t_par = TraceParameter(sim_time=20000, types=[0.4, 0.3, 0.3], int_mean=100, start_fullness=0.5,
                                seed=1023)
         res = Test.test(parameter=par, trace_parameter=t_par, log=True)
         print(res)
 
 
     start_time = time.time()
-    test()
+    graphs()
     print(time.time() - start_time)
     # test()

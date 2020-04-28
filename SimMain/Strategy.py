@@ -163,6 +163,19 @@ class Strategy:
         return r
 
     @staticmethod
+    def implement0_(task, channel_id, sim, parameter) -> ActionsGraph:
+        assert isinstance(task, Task)
+        assert isinstance(sim, Simulation)
+        assert isinstance(channel_id, int)
+        assert isinstance(parameter, SimulationParameter)
+        r = ActionsGraph(sim)
+        a = Block(r, lambda x: isinstance(x, Lift))
+        b = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), after=[a.id], param={"level": 1})
+        c = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), after=[b.id], param={"level": 0})
+        d = Free(r, lambda x: isinstance(x, Lift), after=[c.id])
+        return r
+
+    @staticmethod
     def implement1(task, channel_id, sim, parameter) -> ActionsGraph:
         assert isinstance(task, Task)
         assert isinstance(sim, Simulation)
