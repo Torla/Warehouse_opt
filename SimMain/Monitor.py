@@ -61,6 +61,7 @@ class Monitor:
     def __init__(self, sim):
         assert isinstance(sim, Simulation)
         self.sim = sim
+        self.due_tasks = 0
         self.tasks = []
         self.single_cycle = []
         self.double_cycle = []
@@ -75,18 +76,24 @@ class Monitor:
 
         res.mean_task_wait = 0
 
-        res.mean_task_tot_time = self.sim.now / len(self.tasks)
+        # abbuona qualche task non fatto all fine per consistenza
+        task_done = len(self.tasks)
+        if self.due_tasks != task_done and (
+                (self.due_tasks - task_done) / self.due_tasks < 0.05 or self.due_tasks - task_done < par.Nli):
+            task_done = self.due_tasks
+
+        res.mean_task_tot_time = self.sim.now / task_done
         res.time_per_task = np.average(self.tasks)
         if not self.sim.stop:
             self.sim.working_time += self.sim.now - self.sim.start
             self.sim.stop = True
         res.working_time = self.sim.working_time if self.sim.working_time != 0 else self.sim.now
-        res.mean_task_op_time = res.working_time / len(self.tasks)
+        res.mean_task_op_time = res.working_time / task_done
         res.energy_consumed = sum(
             [i.energyConsumed for i in
              list(filter(lambda x: isinstance(x, MovableResource), self.sim.all_res.values()))])
 
-        res.energy_per_task = res.energy_consumed / len(self.tasks)
+        res.energy_per_task = res.energy_consumed / task_done
 
         res.area = par.Nx * par.Nz
         res.volume = res.area * par.Ny

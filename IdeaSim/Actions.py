@@ -65,11 +65,12 @@ class Branch(Action):
 class ActionsGraph:
     new_id = itertools.count()
 
-    def __init__(self, sim):
+    def __init__(self, sim, task):
         assert isinstance(sim, Simulation.Simulation)
         self.id = next(self.new_id)
         self.sim = sim
         self.actions = {}
+        self.task = task
         self.global_mutex_property = False
 
 
@@ -121,8 +122,8 @@ class Executor:
         self.sim.manager.activate()
 
         # monitor
-
-        self.sim.get_status().monitor.tasks.append([self.sim.now - start])
+        if not self.aborted:
+            self.sim.get_status().monitor.tasks.append([self.sim.now - start])
 
     def execute(self, action_tree, action, taken_inf, sim, completed_flags):
         assert isinstance(action, Action)

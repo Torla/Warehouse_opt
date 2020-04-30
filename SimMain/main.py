@@ -1,3 +1,4 @@
+import copy
 import random
 import time
 
@@ -10,6 +11,7 @@ from SimMain.SimulationParameter import SimulationParameter
 from Trace.Trace import trace_generator, TraceParameter
 from SimMain.Warehouse import Warehouse
 from matplotlib import pyplot as plt
+import multiprocessing as mp
 
 
 class Test:
@@ -37,52 +39,70 @@ class Test:
 
 if __name__ == '__main__':
     def graphs():
+        p_pool = mp.Pool(3)
         result = []
         result1 = []
         result2 = []
-        for nsh in range(1, 4):
+        result3 = []
+        result4 = []
+        result5 = []
+        result6 = []
+        area = 800
+        for tech in range(0, 3):
             result.append({})
             result1.append({})
             result2.append({})
-            for nsa in range(1, 5, 1):
-                par = SimulationParameter(Nx=15, Ny=5, Nz=100,
-                                          Lx=5, Ly=5, Lz=5, Cy=0,
+            result3.append({})
+            result4.append({})
+            result5.append({})
+            result6.append({})
+            for nz in range(30, 200, 30):
+                par = SimulationParameter(Nx=floor(area / nz), Ny=10, Nz=nz,
+                                          Lx=1, Ly=1.5, Lz=1.2, Cy=0,
                                           Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                           Wli=1850, Wsh=850, Wsa=350,
                                           Cr=0.02, Fr=1.15, rendiment=0.9,
-                                          Nli=1, Nsh=nsh, Nsa=nsa,
+                                          Nli=1, Nsh=4, Nsa=20,
                                           bay_level=1.5,
-                                          tech=0, strat=1, strat_par_x=1, strat_par_y=1)
-                t_par = TraceParameter(sim_time=86400, types=[0.4, 0.3, 0.3], int_mean=10, start_fullness=0.5,
-                                       seed=1023)
+                                          tech=tech, strat=1, strat_par_x=1, strat_par_y=1)
+                t_par = TraceParameter(sim_time=2500, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0,
+                                       seed=[1, 2, 3])
                 res = []
-                res.append(Test.test(parameter=par, trace_parameter=t_par, log=False))
-                t_par.seed = 1234
-                res.append(Test.test(parameter=par, trace_parameter=t_par, log=False))
-                t_par.seed = 12
-                res.append(Test.test(parameter=par, trace_parameter=t_par, log=False))
-                result[nsh - 1][nsa] = np.average([i.lifts_util for i in res])
-                result1[nsh - 1][nsa] = np.average([i.shut_util for i in res])
-                result2[nsh - 1][nsa] = np.average([i.sat_util for i in res])
-                print(str(nsh) + " " + str(nsa) + " " + str(result[nsh - 1][nsa]))
-                print(str(nsh) + " " + str(nsa) + " " + str(result1[nsh - 1][nsa]))
-                print(str(nsh) + " " + str(nsa) + " " + str(result2[nsh - 1][nsa]))
+                seeds = []
+                for seed in t_par.seed:
+                    n = copy.copy(t_par)
+                    n.seed = seed
+                    seeds.append(n)
+                res = p_pool.starmap_async(Test.test, [(par, t) for t in seeds]).get()
+                result[tech][nz] = 3600 / np.average([i.mean_task_tot_time for i in res])
+                result1[tech][nz] = np.average([i.single_CT for i in res])
+                result2[tech][nz] = np.average([i.double_CT for i in res])
+                result3[tech][nz] = np.average([i.energy_per_task for i in res])
+                result4[tech][nz] = np.average([i.lifts_util for i in res])
+                result5[tech][nz] = np.average([i.shut_util for i in res])
+                result6[tech][nz] = np.average([i.sat_util for i in res])
+                print(str(tech) + " " + str(nz) + " " + str(result[tech][nz]))
+                print(str(tech) + " " + str(nz) + " " + str(result1[tech][nz]))
+                print(str(tech) + " " + str(nz) + " " + str(result2[tech][nz]))
+                print(str(tech) + " " + str(nz) + " " + str(result3[tech][nz]))
+                print(str(tech) + " " + str(nz) + " " + str(result4[tech][nz]))
+                print(str(tech) + " " + str(nz) + " " + str(result5[tech][nz]))
+                print(str(tech) + " " + str(nz) + " " + str(result6[tech][nz]))
                 print("\n")
-
 
         c = "rgbyk"
         for i in range(0, len(result)):
             lists = sorted(result[i].items())
             x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label=str(i + 1) + " nsh")
+            plt.plot(x, y, c[i], label="tech" + str(i))
         # lists = sorted(result[1].items())
         # x, y = zip(*lists)  # unpack a list of pairs into two tuples
         # plt.plot(x, y, "y", label="tech1")
         # lists = sorted(result[2].items())
         # x, y = zip(*lists)  # unpack a list of pairs into two tuples
         # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('Lift util')
-        plt.xlabel('Nsa')
+        plt.ylabel('Th')
+        plt.xlabel('Nz')
         plt.legend()
 
         plt.show()
@@ -90,15 +110,15 @@ if __name__ == '__main__':
         for i in range(0, len(result1)):
             lists = sorted(result1[i].items())
             x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label=str(i + 1) + " nsh")
+            plt.plot(x, y, c[i], label="tech" + str(i))
             # lists = sorted(result[1].items())
             # x, y = zip(*lists)  # unpack a list of pairs into two tuples
             # plt.plot(x, y, "y", label="tech1")
             # lists = sorted(result[2].items())
             # x, y = zip(*lists)  # unpack a list of pairs into two tuples
             # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('Shutlle util')
-        plt.xlabel('Nsa')
+        plt.ylabel('Single_CT')
+        plt.xlabel('Nz')
         plt.legend()
 
         plt.show()
@@ -106,15 +126,76 @@ if __name__ == '__main__':
         for i in range(0, len(result2)):
             lists = sorted(result2[i].items())
             x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label=str(i + 1) + " nsh")
+            plt.plot(x, y, c[i], label="tech" + str(i))
             # lists = sorted(result[1].items())
             # x, y = zip(*lists)  # unpack a list of pairs into two tuples
             # plt.plot(x, y, "y", label="tech1")
             # lists = sorted(result[2].items())
             # x, y = zip(*lists)  # unpack a list of pairs into two tuples
             # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('Sat util')
-        plt.xlabel('Nsa')
+        plt.ylabel('Duoble_CT')
+        plt.xlabel('Nz')
+        plt.legend()
+
+        plt.show()
+
+        for i in range(0, len(result3)):
+            lists = sorted(result3[i].items())
+            x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            plt.plot(x, y, c[i], label="tech" + str(i))
+            # lists = sorted(result[1].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "y", label="tech1")
+            # lists = sorted(result[2].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "b", label="tech2")
+        plt.ylabel('w/h')
+        plt.xlabel('Nz')
+        plt.legend()
+        plt.show()
+
+        for i in range(0, len(result4)):
+            lists = sorted(result4[i].items())
+            x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            plt.plot(x, y, c[i], label="tech" + str(i))
+            # lists = sorted(result[1].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "y", label="tech1")
+            # lists = sorted(result[2].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "b", label="tech2")
+        plt.ylabel('lift util')
+        plt.xlabel('Nz')
+        plt.legend()
+        plt.show()
+
+        for i in range(0, len(result5)):
+            lists = sorted(result5[i].items())
+            x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            plt.plot(x, y, c[i], label="tech" + str(i))
+            # lists = sorted(result[1].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "y", label="tech1")
+            # lists = sorted(result[2].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "b", label="tech2")
+        plt.ylabel('shuttle util')
+        plt.xlabel('Nz')
+        plt.legend()
+        plt.show()
+
+        for i in range(0, len(result6)):
+            lists = sorted(result6[i].items())
+            x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            plt.plot(x, y, c[i], label="tech" + str(i))
+            # lists = sorted(result[1].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "y", label="tech1")
+            # lists = sorted(result[2].items())
+            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
+            # plt.plot(x, y, "b", label="tech2")
+        plt.ylabel('sat util')
+        plt.xlabel('Nz')
         plt.legend()
 
         plt.show()
@@ -128,10 +209,10 @@ if __name__ == '__main__':
                                   Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                   Wli=1850, Wsh=850, Wsa=350,
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
-                                  Nli=1, Nsh=1, Nsa=1,
+                                  Nli=6, Nsh=4, Nsa=4,
                                   bay_level=1.5,
-                                  tech=0, strat=1, strat_par_x=1, strat_par_y=1)
-        t_par = TraceParameter(sim_time=20000, types=[0.4, 0.3, 0.3], int_mean=100, start_fullness=0.5,
+                                  tech=1, strat=1, strat_par_x=1, strat_par_y=1)
+        t_par = TraceParameter(sim_time=10000, types=[0.4, 0.3, 0.3], int_mean=100, start_fullness=0,
                                seed=1023)
         res = Test.test(parameter=par, trace_parameter=t_par, log=True)
         print(res)

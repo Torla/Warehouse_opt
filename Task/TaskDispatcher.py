@@ -9,11 +9,11 @@ class TaskDispatcher:
         self.tasks = tasks
         self.run()
 
-    # this unpack the order to tasks. The existing queue can be modified
-
     def add_future_task(self, time, task):
         self.tasks[time] = task
 
     def run(self):
-            for time in self.tasks.keys():
-                Event(self.sim, time, "new_task", param={"task": self.tasks[time]})
+        for time in self.tasks.keys():
+            Event(self.sim, time, "new_task", param={"task": self.tasks[time]})
+
+        self.sim.get_status().monitor.due_tasks = len(self.tasks)

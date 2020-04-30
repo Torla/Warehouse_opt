@@ -71,6 +71,7 @@ class Strategy:
     def ab(action, sim):
         assert (isinstance(sim, Simulation))
         sim.logger.log("aborting " + str(action), type=sim.Logger.Type.WARNING)
+        Event(sim, sim.now + 1,"new_task", param={"task": action.action_graph.task} )
         Action.abort(action, sim)
 
     @staticmethod
@@ -79,7 +80,7 @@ class Strategy:
         assert isinstance(sim, Simulation)
         assert isinstance(channel_id, int)
         assert isinstance(parameter, SimulationParameter)
-        r = ActionsGraph(sim)
+        r = ActionsGraph(sim, task)
         channel = sim.find_res_by_id(channel_id)
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         if task.order_type == OrderType.DEPOSIT:
@@ -163,25 +164,12 @@ class Strategy:
         return r
 
     @staticmethod
-    def implement0_(task, channel_id, sim, parameter) -> ActionsGraph:
-        assert isinstance(task, Task)
-        assert isinstance(sim, Simulation)
-        assert isinstance(channel_id, int)
-        assert isinstance(parameter, SimulationParameter)
-        r = ActionsGraph(sim)
-        a = Block(r, lambda x: isinstance(x, Lift))
-        b = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), after=[a.id], param={"level": 1})
-        c = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), after=[b.id], param={"level": 0})
-        d = Free(r, lambda x: isinstance(x, Lift), after=[c.id])
-        return r
-
-    @staticmethod
     def implement1(task, channel_id, sim, parameter) -> ActionsGraph:
         assert isinstance(task, Task)
         assert isinstance(sim, Simulation)
         assert isinstance(channel_id, int)
         assert isinstance(parameter, SimulationParameter)
-        r = ActionsGraph(sim)
+        r = ActionsGraph(sim, task)
         channel = sim.find_res_by_id(channel_id)
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         lift = sim.find_res(
@@ -191,13 +179,14 @@ class Strategy:
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
                               after=[block_channel.id])
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              after=[block_sat.id])
+                              after=[block_sat.id], sort_by=lambda x: distance(x.position, bay.position,
+                                                                               sim.get_status().parameter))
             block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
                                after=[block_shu.id])
 
             branch_shu_lf = Branch(r, after=[block_shu.id],
                                    condition=lambda sim, taken_inf: lift.content is None or lift.content.id != list(
-                                       filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].id, on_false=Strategy.ab)
+                                       filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].id)
 
             # go and take shuttle
             fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite), param={"z": 0},
@@ -252,7 +241,8 @@ class Strategy:
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
                               after=[block_channel.id])
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              after=[block_sat.id])
+                              after=[block_sat.id], sort_by=lambda x: distance(x.position, channel.position,
+                                                                               sim.get_status().parameter))
 
             branch_shu_on_level = Branch(r, after=[block_shu.id], condition=lambda sim, taken_inf: list(
                 filter(lambda x: isinstance(x, Shuttle), taken_inf))[0].position.level != channel.position.level)
@@ -349,7 +339,7 @@ class Strategy:
         assert isinstance(sim, Simulation)
         assert isinstance(channel_id, int)
         assert isinstance(parameter, SimulationParameter)
-        r = ActionsGraph(sim)
+        r = ActionsGraph(sim, task)
         channel = sim.find_res_by_id(channel_id)
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         lift = sim.find_res(
@@ -357,9 +347,11 @@ class Strategy:
         if task.order_type == OrderType.DEPOSIT:
             block_channel = Block(r, channel.id)
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
-                              after=[block_channel.id])
+                              after=[block_channel.id], sort_by=lambda x: distance(x.position, bay.position,
+                                                                                   sim.get_status().parameter))
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              after=[block_sat.id])
+                              after=[block_sat.id], sort_by=lambda x: distance(x.position, bay.position,
+                                                                               sim.get_status().parameter))
 
             # take sat to 0
 
@@ -480,9 +472,11 @@ class Strategy:
 
             block_channel = Block(r, channel.id)
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
-                              after=[block_channel.id])
+                              after=[block_channel.id], sort_by=lambda x: distance(x.position, channel.position,
+                                                                                   sim.get_status().parameter))
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              after=[block_sat.id])
+                              after=[block_sat.id], sort_by=lambda x: distance(x.position, channel.position,
+                                                                               sim.get_status().parameter))
 
             # condition check
 

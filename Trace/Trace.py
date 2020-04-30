@@ -16,7 +16,7 @@ def trace_generator(trace_par) -> {}:
 
     warehouse = {}
 
-    while time < trace_par.sim_time:
+    while time < trace_par.sim_time - 200:
         time += round(np.random.exponential(scale=trace_par.int_mean))
 
         item_type = "Tipo" + str(np.random.choice([i for i in range(0, len(trace_par.types))], p=trace_par.types))

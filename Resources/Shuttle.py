@@ -17,6 +17,8 @@ class Shuttle(MovableResource, Performer):
         self.TIME_TO_DROP = 10
         self.TIME_TO_PICKUP = 10
         self.weight = par.Wsh
+        if par.tech == 0:
+            self.weight = par.Wli * 10
         self.add_mapping(ActionType.MOVE, self.move_shuttle)
         self.add_mapping(ActionType.PICKUP, self.pickup)
         self.add_mapping(ActionType.DROP, self.drop)
