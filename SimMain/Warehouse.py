@@ -3,7 +3,7 @@ from random import randint
 import math
 import numpy as np
 
-import SimMain.Strategy
+from SimMain.Strategy import Strategy
 from IdeaSim.Simulation import Simulation
 from Resources import Bay
 from Resources.Channel import Channel
@@ -30,7 +30,7 @@ class Warehouse:
         #        self.resources = Resources(sim)
         # all res
         self.all_resources = []
-        self.sim.manager.add_mapping("new_task", SimMain.Strategy.Strategy.strategy)
+        self.sim.manager.add_mapping("new_task", Strategy.strategy)
         TaskDispatcher(sim, trace)
 
         lifts = []
@@ -84,11 +84,12 @@ class Warehouse:
             task = Task(Item("Tipo" + str(
                 np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
                         OrderType.DEPOSIT)
-            selection = SimMain.Strategy.Strategy.__dict__["strategy" + str(parameter.strategy)] \
+            Strategy.bay = None
+            Strategy.strategy1_static = None
+            selection = Strategy.__dict__["strategy" + str(parameter.strategy)] \
                 .__func__(task, sim, parameter)
             assert isinstance(selection, int)
             channel = sim.find_res_by_id(selection, False)
             channel.items.append(task.item)
             channel.items.extend([Item(task.item.item_type) for i in range(0, channel.capacity)])
             i += channel.capacity
-        # self.monitor = Monitor(env, self.task_queue, self.parameter, self)

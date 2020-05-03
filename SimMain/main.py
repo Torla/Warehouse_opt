@@ -37,7 +37,9 @@ class Test:
         warehouse = Warehouse(sim, parameter, trace_parameter)
         sim.run(until=trace_parameter.sim_time)
 
-        return sim.get_status().monitor.get_result()
+        ret = sim.get_status().monitor.get_result()
+
+        return ret
 
 
 # warehouse.monitor.plot(definition=3600)
@@ -218,7 +220,7 @@ if __name__ == '__main__':
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
                                   Nli=6, Nsh=4, Nsa=4,
                                   bay_level=0,
-                                  tech=1, strat=1, strat_par_x=1, strat_par_y=1)
+                                  tech=0, strat=1, strat_par_x=1, strat_par_y=1)
         t_par = TraceParameter(sim_time=10000, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                seed=1023)
         res = Test.test(parameter=par, trace_parameter=t_par, log=True)

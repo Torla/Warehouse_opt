@@ -4,7 +4,7 @@ import simpy
 from simpy import Container
 
 from IdeaSim.Manager import Manager
-from IdeaSim.Resources import Resources, Resource
+from IdeaSim.Resources import Resources, Resource, Performer
 
 
 class Simulation(simpy.Environment):
@@ -49,6 +49,7 @@ class Simulation(simpy.Environment):
 
         self.free_res = Resources(self)
         self.all_res = {}
+        self.all_performer = []
 
         self.__status__ = status
 
@@ -65,6 +66,8 @@ class Simulation(simpy.Environment):
         assert isinstance(res, Resource)
         self.all_res[res.id] = res
         self.free_res.items.append(res)
+        if isinstance(res, Performer):
+            self.all_performer.append(res)
 
     def find_res_by_id(self, id, free=True):
         if not free:
@@ -72,9 +75,14 @@ class Simulation(simpy.Environment):
         return list(filter(lambda x: x.id == id, self.free_res.items))[0]
 
     def find_res(self, func, free=True) -> list:
-        # todo this is the bottle neck
         l = self.free_res.items if free else self.all_res.values()
         return list(filter(lambda x: func(x), l))
+
+    def find_performer(self, func, free=True) -> list:
+        if free:
+            return list(filter(lambda x: self.is_free(x) and func(x), self.all_performer))
+        else:
+            return list(filter(lambda x: func(x), self.all_performer))
 
     def get_res_by_id(self, id):
         # monitor

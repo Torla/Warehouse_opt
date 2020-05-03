@@ -41,6 +41,7 @@ class Opt:
             # print("fit: " + str(i.get_fitness()))
             # print(str(i.get_average_results()))
             # res.append(i.get_fitness())
+            print(count)
             count += 1
             if count > generations:
                 return OptParameter.map(i.opt_par, i), i.get_average_results()
@@ -222,19 +223,18 @@ if __name__ == '__main__':
                            tech=1, strat=1, strat_par_x=1,
                            strat_par_y=1)
 
-        t_par = TraceParameter(sim_time=3600 * 6, types=[0.4, 0.3, 0.3], int_mean=100, start_fullness=0,
+        t_par = TraceParameter(sim_time=6000, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0.1,
                                seed=[100, 200, 300])
-        f_par = FitnessParameter(task_tot_time=10000, num_lifts=10, num_sats=1, num_shuttle=1)
+        f_par = FitnessParameter(num_lifts=10, num_sats=1, num_shuttle=1)
         str(Opt.optimization(par, t_par, f_par, 10, 3))
 
 
     def graphs():
-        p_pool = mp.Pool(3)
         result = []
         area = 800
         for tech in range(0, 3):
             result.append({})
-            for nz in range(40, 201, 40):
+            for nz in range(30, 301, 30):
                 start = time()
                 par = OptParameter(Nx=1, Ny=OptRange(2, 10), Nz=nz,
                                    Lx=1, Ly=1.5, Lz=1.2, Cy=0,
@@ -244,12 +244,12 @@ if __name__ == '__main__':
                                    Nli=OptRange(1, 10), Nsh=OptRange(1, 10), Nsa=OptRange(1, 10),
                                    bay_level=0,
                                    tech=tech, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
-                                   strat_par_y=1)
+                                   strat_par_y=0.5)
 
-                t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0,
+                t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0.5,
                                        seed=[100, 200, 300])
-                f_par = FitnessParameter(task_tot_time=10000, num_lifts=10, num_sats=1, num_shuttle=1)
-                par, res = Opt.optimization(par, t_par, f_par, 12, 3)
+                f_par = FitnessParameter(task_tot_time=100, num_lifts=10, num_sats=1, num_shuttle=1)
+                par, res = Opt.optimization(par, t_par, f_par, 10, 3)
                 result[tech][nz] = res
                 print(str(tech) + " " + str(nz) + " :\n" + str(result[tech][nz]))
                 print("time: " + str(time() - start))

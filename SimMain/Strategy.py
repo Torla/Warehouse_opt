@@ -40,8 +40,13 @@ class Strategy:
     def select_type(l, tipe):
         return list(filter(lambda x: isinstance(x, tipe), l))[0]
 
+    bay = None
+
+
     @staticmethod
     def strategy(event) -> ActionsGraph:
+        if Strategy.bay is None:
+            Strategy.bay = event.sim.find_res(lambda x: isinstance(x, Bay))[0]
         assert isinstance(event, Event)
         event.sim.logger.log(
             "New task dispached " + str(event.param["task"].order_type) + " " + str(event.param["task"].item))
@@ -53,6 +58,8 @@ class Strategy:
             event.sim.logger.log("Strategy or technology selected is not defined", type=event.sim.Logger.Type.FAIL)
             exit(-1)
         return Strategy.implement(event.param["task"], selection, event.sim, parameter)
+
+
 
     @staticmethod
     def implement(task, channel_id, sim, parameter) -> ActionsGraph:
@@ -82,7 +89,6 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         r = ActionsGraph(sim, task)
         channel = sim.find_res_by_id(channel_id)
-        bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         if task.order_type == OrderType.DEPOSIT:
             block = Block(r, channel.id)
             block1 = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
@@ -97,7 +103,7 @@ class Strategy:
                                    sim.find_res_by_id(channel_id, free=False).items) != sim.find_res_by_id(channel_id,
                                                                                                            free=False).capacity,
                                after=[block.id, block1.id, block2.id, block3.id])
-            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": Strategy.bay.position.level},
                           after=[fork_move.id])
             move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
                            after=[fork_move.id])
@@ -149,7 +155,7 @@ class Strategy:
             fork_move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Satellite), param={"z": 0},
                                after=[fork_move.id])
 
-            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+            move = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": Strategy.bay.position.level},
                           after=[fork_move.id])
             move1 = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
                            after=[fork_move.id])
@@ -171,15 +177,14 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         r = ActionsGraph(sim, task)
         channel = sim.find_res_by_id(channel_id)
-        bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
-        lift = sim.find_res(
+        lift = sim.find_performer(
             lambda x: isinstance(x, Lift) and x.position.section == channel.position.section, free=False)[0]
         if task.order_type == OrderType.DEPOSIT:
             block_channel = Block(r, channel.id)
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
                               after=[block_channel.id])
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              after=[block_sat.id], sort_by=lambda x: distance(x.position, bay.position,
+                              after=[block_sat.id], sort_by=lambda x: distance(x.position, Strategy.bay.position,
                                                                                sim.get_status().parameter))
             block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
                                after=[block_shu.id])
@@ -207,9 +212,9 @@ class Strategy:
 
                              after=[move_shu.id, move_lift.id], branch=branch_shu_lf.id)
 
-            # go to bay and take
+            # go to Strategy.bay and take
 
-            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": Strategy.bay.position.level},
                                after=[pick_up.id])
 
             get = Action(r, ActionType.GET_FROM_BAY, lambda x: isinstance(x, Satellite), param={"item": task.item},
@@ -306,7 +311,7 @@ class Strategy:
             move_shu = Action(r, ActionType.MOVE, lambda x: isinstance(x, Shuttle), param={"x": 0},
                               after=[fork_move.id])
 
-            # the lift take shu and return to bay
+            # the lift take shu and return to Strategy.bay
 
             block_lift = Block(r, lambda x: isinstance(x, Lift) and x.position.section == channel.position.section,
                                after=[pick_up.id])
@@ -320,7 +325,7 @@ class Strategy:
             pick_up = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Lift), param={"auto": 0},
                              after=[move_shu.id, move_lift.id])
 
-            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": Strategy.bay.position.level},
                                after=[pick_up.id])
 
             drop = Action(r, ActionType.DROP_TO_BAY, lambda x: isinstance(x, Satellite), param={},
@@ -341,16 +346,15 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         r = ActionsGraph(sim, task)
         channel = sim.find_res_by_id(channel_id)
-        bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
-        lift = sim.find_res(
+        lift = sim.find_performer(
             lambda x: isinstance(x, Lift) and x.position.section == channel.position.section, free=False)[0]
         if task.order_type == OrderType.DEPOSIT:
             block_channel = Block(r, channel.id)
             block_sat = Block(r, lambda x: isinstance(x, Satellite) and x.position.section == channel.position.section,
-                              after=[block_channel.id], sort_by=lambda x: distance(x.position, bay.position,
+                              after=[block_channel.id], sort_by=lambda x: distance(x.position, Strategy.bay.position,
                                                                                    sim.get_status().parameter))
             block_shu = Block(r, lambda x: isinstance(x, Shuttle) and x.position.section == channel.position.section,
-                              after=[block_sat.id], sort_by=lambda x: distance(x.position, bay.position,
+                              after=[block_sat.id], sort_by=lambda x: distance(x.position, Strategy.bay.position,
                                                                                sim.get_status().parameter))
 
             # take sat to 0
@@ -435,9 +439,9 @@ class Strategy:
             pick_up_shu = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Lift), param={"auto": 0},
                                  after=[move_lift.id, move_shu.id], branch=branch_sat_shu_lf)
 
-            # go to bay take and go to level
+            # go to Strategy.bay take and go to level
 
-            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": Strategy.bay.position.level},
 
                                after=[pick_up_shu.id])
 
@@ -615,14 +619,14 @@ class Strategy:
             pick_up_shu = Action(r, ActionType.PICKUP, lambda x: isinstance(x, Lift), param={"auto": 0},
                                  after=[move_lift.id, move_shu.id])
 
-            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": bay.position.level},
+            move_lift = Action(r, ActionType.MOVE, lambda x: isinstance(x, Lift), param={"level": Strategy.bay.position.level},
 
                                after=[pick_up_shu.id])
 
             drop = Action(r, ActionType.DROP_TO_BAY, lambda x: isinstance(x, Satellite), param={},
                           after=[move_lift.id])
 
-            # take all to bay and finish
+            # take all to Strategy.bay and finish
 
             free = Free(r, lambda x: isinstance(x, Satellite), after=[drop.id])
             free = Free(r, lambda x: isinstance(x, Shuttle), after=[drop.id])
@@ -637,9 +641,11 @@ class Strategy:
         assert isinstance(task, Task)
         assert isinstance(parameter, SimulationParameter)
         assert isinstance(sim, Simulation)
+        if Strategy.bay is None:
+            Strategy.bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel
-            channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
+            channels = sim.find_performer(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
                     len(x.items) == 0 or x.items[0].item_type == task.item.item_type))
             if len(channels) == 0:
                 sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
@@ -657,7 +663,7 @@ class Strategy:
 
     strategy1_static = None
 
-    # nearest to bay
+    # nearest to Strategy.bay
     @staticmethod
     def strategy1(task, sim, parameter) -> int:
         assert isinstance(task, Task)
@@ -670,12 +676,14 @@ class Strategy:
                 x.x - y.x) * par.strategy_par_x * par.Lx
 
         def init_static():
-            Strategy.strategy1_static = sorted([(c, w_dist(c.position, bay.position, parameter)) for c in
+            Strategy.strategy1_static = sorted([(c, w_dist(c.position, Strategy.bay.position, parameter)) for c in
                                                 sim.find_res(lambda x: isinstance(x, Channel), free=False)],
                                                key=lambda x: x[1])
 
-        bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         channels = []
+
+        if Strategy.bay is None:
+            Strategy.bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
 
         if Strategy.strategy1_static is None:
             init_static()
@@ -720,8 +728,11 @@ class Strategy:
         assert isinstance(parameter, SimulationParameter)
         assert isinstance(sim, Simulation)
 
+        if Strategy.bay is None:
+            Strategy.bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
+
         section = np.random.randint(0, len(sim.find_res(lambda x: isinstance(x, Lift), free=False)))
-        bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
+        Strategy.bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
 
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel

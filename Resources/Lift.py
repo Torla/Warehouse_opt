@@ -29,6 +29,9 @@ class Lift(MovableResource, Performer):
         self.cycle_start_energy = 0
         self.last_op = None
 
+        self.bay_level = None
+
+
     @overrides
     def __str__(self):
         return "Lift(" + str(self.id) + ")"
@@ -41,6 +44,8 @@ class Lift(MovableResource, Performer):
 
     def move_lift(self, action, sim, taken_inf):
         assert (isinstance(sim, Simulation))
+        if self.bay_level is None:
+            self.bay_level = sim.find_res(lambda x: isinstance(x, Bay))[0].position.level
         if "resource" in action.param:
             action.param["level"] = sim.find_res_by_id(action.param["resource"], free=False)[
                 0].position.level
@@ -49,7 +54,7 @@ class Lift(MovableResource, Performer):
         elif "auto_sat" in action.param:
             action.param["level"] = list(filter(lambda x: isinstance(x, Satellite), taken_inf))[0].position.level
         yield self.go_to(action.param["level"])
-        if action.param["level"] == sim.find_res(lambda x: isinstance(x, Bay))[0].position.level:
+        if action.param["level"] == self.bay_level:
             actual_task = OrderType.DEPOSIT if list(filter(lambda x: isinstance(x, Satellite), taken_inf))[
                                                    0].content is None else OrderType.RETRIEVAL
             if (self.last_op == OrderType.DEPOSIT and actual_task == OrderType.DEPOSIT) or (

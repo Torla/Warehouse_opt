@@ -129,16 +129,16 @@ class Monitor:
             res.double_CT_E = np.average(self.double_cycle_e)
 
         res.lifts_util_proc = np.average(
-            [i.util_proc for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
+            [i.util_proc for i in self.sim.find_performer(lambda x: isinstance(x, Lift), False)]) / res.working_time
         res.shut_util_proc = np.average(
-            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
+            [i.util for i in self.sim.find_performer(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
         res.sat_util_proc = np.average(
-            [i.util for i in self.sim.find_res(lambda x: isinstance(x, Satellite), False)]) / res.working_time
+            [i.util for i in self.sim.find_performer(lambda x: isinstance(x, Satellite), False)]) / res.working_time
         res.lifts_util = np.average(
-            [i.blocked_time for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time
+            [i.blocked_time for i in self.sim.find_performer(lambda x: isinstance(x, Lift), False)]) / res.working_time
         res.shut_util = np.average(
-            [i.blocked_time for i in self.sim.find_res(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
+            [i.blocked_time for i in self.sim.find_performer(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
         res.sat_util = np.average(
-            [i.blocked_time for i in self.sim.find_res(lambda x: isinstance(x, Satellite), False)]) / res.working_time
+            [i.blocked_time for i in self.sim.find_performer(lambda x: isinstance(x, Satellite), False)]) / res.working_time
 
         return res
