@@ -6,7 +6,8 @@ from numpy import average
 import Opt.Optimization
 
 
-def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, bottle_neck_prob, bottle_neck_swap, n_process):
+def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, mut_change, mut_perc, bottle_neck_prob, bottle_neck_swap,
+        n_process):
     Opt.Optimization.Solution.set_process_pool(n_process)
 
     class Chromosome(Opt.Optimization.Solution):
@@ -18,10 +19,18 @@ def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, bottle_neck_prob, bottle
                 self.mutation()
 
         def mutation(self):
-            i = random.randint(0, len(self) - 1)
-            self[i] += self[i] * mut * numpy.random.randn(1)[0]
-            self[i] = 0 if self[i] < 0 else self[i]
-            self[i] = 1 if self[i] > 1 else self[i]
+            seleted = []
+            for i in range(0, len(self)):
+                if i <= len(self) * mut_perc:
+                    seleted.append(1)
+                else:
+                    seleted.append(0)
+            random.shuffle(seleted)
+            for i in range(0, len(self)):
+                if seleted[i] == 1:
+                    self[i] += mut * numpy.random.randn()
+                    self[i] = 0 if self[i] < 0 else self[i]
+                    self[i] = 1 if self[i] > 1 else self[i]
 
         @staticmethod
         def crossover(c1, c2):
@@ -49,11 +58,9 @@ def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, bottle_neck_prob, bottle
                 if i >= round(len(self.pop) * pw):
                     break
             self.pop = pop
-            print(average(list(map(lambda x: x.get_fitness(), self.pop))))
 
         def gen_couple(self):
             w = list(map(lambda x: 1 / x.get_fitness(), self.pop))
-
             for i in range(0, len(w)):
                 if i == 0:
                     pass
@@ -79,4 +86,5 @@ def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, bottle_neck_prob, bottle
     pop = Population(opt_par, t_par, f_par, mut, pop_size, pos_swap)
     while True:
         yield pop.get_best()
+        mut += mut * mut_change
         pop.generation()

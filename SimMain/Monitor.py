@@ -14,12 +14,18 @@ class Monitor:
             self.mean_task_wait = 1000000000
             self.mean_task_op_time = 1000000000
             self.mean_task_tot_time = 1000000000
+            self.Th = 0
+            self.completeness = 0
             self.working_time = 1000000000
+            self.task_done = 0
             self.time_per_task = 1000000000
             self.energy_consumed = 1000000000
             self.energy_per_task = 1000000000
             self.area = 1000000000
             self.volume = 1000000000
+            self.Nx = 10000000000
+            self.Ny = 10000000000
+            self.Nz = 10000000000
             self.num_lifts = 1000000000
             self.num_shuttles = 1000000000
             self.num_sats = 1000000000
@@ -41,6 +47,7 @@ class Monitor:
                    + "\nAverage task op time: " + str(self.mean_task_op_time) \
                    + "\nAverage task tot time: " + str(self.mean_task_tot_time) \
                    + "\nTh: " + str(3600 / self.mean_task_tot_time) \
+                   + "\ntask done: " + str(self.task_done) \
                    + "\nEnergy consumed: " + str(self.energy_consumed / 1000) + " KW/h" \
                    + "\nEnergy consumed per tasks: " + str(self.energy_per_task) + " w/h" \
                    + "\nWorking time: " + str(self.working_time) \
@@ -76,13 +83,22 @@ class Monitor:
 
         res.mean_task_wait = 0
 
+        res.Nx = par.Nx
+        res.Ny = par.Ny
+        res.Nz = par.Nz
+
         # abbuona qualche task non fatto all fine per consistenza
         task_done = len(self.tasks)
         if self.due_tasks != task_done and (
                 (self.due_tasks - task_done) / self.due_tasks < 0.05 or self.due_tasks - task_done < par.Nli):
             task_done = self.due_tasks
 
+        res.completeness = task_done/self.due_tasks
+
+        res.task_done = task_done
+
         res.mean_task_tot_time = self.sim.now / task_done
+        res.Th = 3600 / res.mean_task_tot_time
         res.time_per_task = np.average(self.tasks)
         if not self.sim.stop:
             self.sim.working_time += self.sim.now - self.sim.start
@@ -102,12 +118,15 @@ class Monitor:
         res.num_shuttles = par.Nsh
         res.num_sats = par.Nsa
 
-        res.single_CT = np.average(self.single_cycle)
-        res.double_CT = np.average(self.double_cycle)
-        res.single_CT_V = np.var(self.single_cycle)
-        res.double_CT_V = np.var(self.double_cycle)
-        res.single_CT_E = np.average(self.single_cycle_e)
-        res.double_CT_E = np.average(self.double_cycle_e)
+        if len(self.single_cycle) > 0:
+            res.single_CT = np.average(self.single_cycle)
+            res.single_CT_V = np.var(self.single_cycle)
+            res.single_CT_E = np.average(self.single_cycle_e)
+
+        if len(self.double_cycle) > 0:
+            res.double_CT = np.average(self.double_cycle)
+            res.double_CT_V = np.var(self.double_cycle)
+            res.double_CT_E = np.average(self.double_cycle_e)
 
         res.lifts_util_proc = np.average(
             [i.util_proc for i in self.sim.find_res(lambda x: isinstance(x, Lift), False)]) / res.working_time

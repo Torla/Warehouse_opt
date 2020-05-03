@@ -22,6 +22,13 @@ class Test:
                 self.parameter = parameter
                 self.monitor = monitor
 
+        # todo temporari
+        parameter.Nx = round(4000 / (parameter.Nz * parameter.Ny))
+        # print("\n\n")
+        # print(parameter.Nx)
+        # print(parameter.Ny)
+        # print(parameter.Nz)
+        # print("\n\n")
         sim = Simulation(Status(parameter, None))
         sim.__status__.monitor = Monitor(sim)
         sim.logger.enable(log)
@@ -210,15 +217,15 @@ if __name__ == '__main__':
                                   Wli=1850, Wsh=850, Wsa=350,
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
                                   Nli=6, Nsh=4, Nsa=4,
-                                  bay_level=1.5,
+                                  bay_level=0,
                                   tech=1, strat=1, strat_par_x=1, strat_par_y=1)
-        t_par = TraceParameter(sim_time=10000, types=[0.4, 0.3, 0.3], int_mean=100, start_fullness=0,
+        t_par = TraceParameter(sim_time=10000, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                seed=1023)
         res = Test.test(parameter=par, trace_parameter=t_par, log=True)
         print(res)
 
 
     start_time = time.time()
-    graphs()
+    test()
     print(time.time() - start_time)
     # test()

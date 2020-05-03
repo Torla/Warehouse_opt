@@ -71,7 +71,7 @@ class Strategy:
     def ab(action, sim):
         assert (isinstance(sim, Simulation))
         sim.logger.log("aborting " + str(action), type=sim.Logger.Type.WARNING)
-        Event(sim, sim.now + 1,"new_task", param={"task": action.action_graph.task} )
+        Event(sim, sim.now + 1, "new_task", param={"task": action.action_graph.task})
         Action.abort(action, sim)
 
     @staticmethod
@@ -655,6 +655,8 @@ class Strategy:
             ret = np.random.choice(channels)
             return ret.id
 
+    strategy1_static = None
+
     # nearest to bay
     @staticmethod
     def strategy1(task, sim, parameter) -> int:
@@ -667,35 +669,46 @@ class Strategy:
             return abs(x.level - y.level) * par.strategy_par_y * par.Ly + abs(
                 x.x - y.x) * par.strategy_par_x * par.Lx
 
+        def init_static():
+            Strategy.strategy1_static = sorted([(c, w_dist(c.position, bay.position, parameter)) for c in
+                                                sim.find_res(lambda x: isinstance(x, Channel), free=False)],
+                                               key=lambda x: x[1])
+
         bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
         channels = []
 
+        if Strategy.strategy1_static is None:
+            init_static()
+
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel
-            channels = sim.find_res(lambda x: isinstance(x, Channel) and len(x.items) < x.capacity and (
-                    len(x.items) == 0 or x.items[
-                0].item_type == task.item.item_type))
+
+            min_dist = 1000000
+            for x in Strategy.strategy1_static:
+                if x[1] > min_dist:
+                    break
+                if sim.is_free(x[0]) and len(x[0].items) < x[0].capacity and (
+                        len(x[0].items) == 0 or x[0].items[0].item_type == task.item.item_type):
+                    min_dist = x[1]
+                    channels.append(x[0])
+
             if len(channels) == 0:
                 sim.logger.log("No place to deposit " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoPlaceTODeposit(task, delay=60)
 
-            min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
-            min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
-            channels = list(
-                filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
 
         elif task.order_type == OrderType.RETRIEVAL:
 
-            channels = sim.find_res(lambda x: isinstance(x, Channel) and
-                                              len(x.items) > 0 and x.items[
-                                                  0].item_type == task.item.item_type)
+            min_dist = 1000000
+            for x in Strategy.strategy1_static:
+                if x[1] > min_dist:
+                    break
+                if sim.is_free(x[0]) and len(x[0].items) > 0 and x[0].items[0].item_type == task.item.item_type:
+                    min_dist = x[1]
+                    channels.append(x[0])
             if len(channels) == 0:
                 sim.logger.log("No item to recover " + str(task.item), type=sim.Logger.Type.WARNING)
                 raise Strategy.NoItemToTake(task, delay=60)
-            min_dist = min(channels, key=lambda x: w_dist(x.position, bay.position, sim.get_status().parameter))
-            min_dist = w_dist(min_dist.position, bay.position, sim.get_status().parameter)
-            channels = list(
-                filter(lambda x: w_dist(x.position, bay.position, sim.get_status().parameter) == min_dist, channels))
 
         ret = np.random.choice(channels)
         return ret.id

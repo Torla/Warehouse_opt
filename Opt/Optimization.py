@@ -4,6 +4,8 @@ import os
 import random
 from time import time
 from typing import List
+
+import jsonpickle
 import math
 from simanneal import anneal
 
@@ -27,38 +29,21 @@ from Trace.Trace import TraceParameter
 
 class Opt:
     @staticmethod
-    def optimization():
-        par = OptParameter(Nx=OptRange(5, 10), Ny=OptRange(5, 10), Nz=OptRange(100, 200),
-                           Lx=5, Ly=5, Lz=5, Cy=1,
-                           Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
-                           Wli=1850, Wsh=850, Wsa=350,
-                           Cr=0.02, Fr=1.15, rendiment=0.9,
-                           Nli=2, Nsh=OptRange(1, 4), Nsa=OptRange(1, 4),
-                           bay_level=OptRange(0, 5, True),
-                           tech=2, strat=1, strat_par_x=OptRange(0, 1, True),
-                           strat_par_y=OptRange(0, 1, True))
-
-        t_par = TraceParameter(sim_time=10000, types=[0.5, 0.5], int_mean=100, start_fullness=0.2, seed=[35, 64])
-        f_par = FitnessParameter(task_op_time=1, energy_consumed=0.5)
-
-        for m in [0.2]:
-            for pop in [20]:
-                res = []
-                t = []
-                s = time()
-                from Opt.Genetic import opt
-                for i in opt(par, t_par, f_par, pop, 0.2, m, 0.1, 0.5, 2):
-                    print("t: " + str(time() - s))
-                    print(i.get_fitness())
-                    print(par.map(i).__dict__)
-                    print(str(i.res.get()[0]))
-                    t.append(time() - s)
-                    res.append(i.get_fitness())
-                    if time() - s > 1000:
-                        break
-                print(str(pop) + "/" + str(m))
-                # open("runs/big" + str(pop) + "m" + str(round(m * 100)) + ".csv", mode="w+", ).write(
-                #    pd.Series(res, index=t).to_csv(header=False))
+    def optimization(opt_par, trace_par, fitness_par, generations, processes):
+        res = []
+        t = []
+        s = time()
+        from Opt.Genetic import opt
+        count = 0
+        for i in opt(opt_par, trace_par, fitness_par, 50, 0.2, 1, -0.1, 0.3, 0, 0.5, processes):
+            # print("\n\nt: " + str(time() - s))
+            # i.get_fitness()
+            # print("fit: " + str(i.get_fitness()))
+            # print(str(i.get_average_results()))
+            # res.append(i.get_fitness())
+            count += 1
+            if count > generations:
+                return OptParameter.map(i.opt_par, i), i.get_average_results()
 
 
 class OptRange:
@@ -139,8 +124,8 @@ class Solution(List):
     p_pool = None
 
     def __init__(self, opt_par, t_par, fitness_par, array=None) -> None:
-        assert isinstance(opt_par, OptParameter)
-        assert isinstance(fitness_par, FitnessParameter)
+        # assert isinstance(opt_par, OptParameter)
+        # assert isinstance(fitness_par, FitnessParameter)
         self.opt_par = opt_par
         self.t_par = t_par
         self.fitness_par = fitness_par
@@ -149,6 +134,7 @@ class Solution(List):
             super().__init__([])
             for i in range(0, opt_par.variable_num()):
                 self.append(random.random())
+                # self.append(0.01)
         else:
             super().__init__(array)
 
@@ -186,13 +172,111 @@ class Solution(List):
                     w.writeheader()
                 w.writerow(d)
             for p in res.__dict__:
-                if isinstance(p, int) or isinstance(p, float):
+                if isinstance(res.__dict__[p], int) or isinstance(res.__dict__[p], float):
                     ret += (res.__dict__[p] * self.fitness_par.__dict__[p]) / len(results)
                 else:
                     ret += 10000000000
         self.saved = True
         return ret
 
+    def get_average_results(self):
+        ret = Monitor.Results()
+        for p in ret.__dict__:
+            ret.__dict__[p] = 0
+        try:
+            results = self.res.get()
+        except Exception as err:
+            return np.inf
+        i = 0
+        for res in results:
+            if not self.saved:
+                d = self.opt_par.map(self).__dict__
+                t = copy.copy(self.t_par)
+                t.seed = self.t_par.seed[i]
+                i += 1
+                d.update(t.__dict__)
+                d.update(res.__dict__)
+                w = csv.DictWriter(open("results.csv", mode="a+"),
+                                   fieldnames=(list(d.keys())))
+                if os.stat("results.csv").st_size < 10:
+                    w.writeheader()
+                w.writerow(d)
+            for p in res.__dict__:
+                if isinstance(res.__dict__[p], int) or isinstance(res.__dict__[p], float):
+                    ret.__dict__[p] += (res.__dict__[p]) / len(results)
+                else:
+                    ret.__dict__[p] = 999999999
+        self.saved = True
+        return ret
+
 
 if __name__ == '__main__':
-    Opt.optimization()
+    def test():
+        par = OptParameter(Nx=10, Ny=10, Nz=100,
+                           Lx=5, Ly=5, Lz=5, Cy=1,
+                           Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
+                           Wli=1850, Wsh=850, Wsa=350,
+                           Cr=0.02, Fr=1.15, rendiment=0.9,
+                           Nli=OptRange(1, 5), Nsh=OptRange(1, 5), Nsa=OptRange(1, 5),
+                           bay_level=0,
+                           tech=1, strat=1, strat_par_x=1,
+                           strat_par_y=1)
+
+        t_par = TraceParameter(sim_time=3600 * 6, types=[0.4, 0.3, 0.3], int_mean=100, start_fullness=0,
+                               seed=[100, 200, 300])
+        f_par = FitnessParameter(task_tot_time=10000, num_lifts=10, num_sats=1, num_shuttle=1)
+        str(Opt.optimization(par, t_par, f_par, 10, 3))
+
+
+    def graphs():
+        p_pool = mp.Pool(3)
+        result = []
+        area = 800
+        for tech in range(0, 3):
+            result.append({})
+            for nz in range(40, 201, 40):
+                start = time()
+                par = OptParameter(Nx=1, Ny=OptRange(2, 10), Nz=nz,
+                                   Lx=1, Ly=1.5, Lz=1.2, Cy=0,
+                                   Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
+                                   Wli=1850, Wsh=850, Wsa=350,
+                                   Cr=0.02, Fr=1.15, rendiment=0.9,
+                                   Nli=OptRange(1, 10), Nsh=OptRange(1, 10), Nsa=OptRange(1, 10),
+                                   bay_level=0,
+                                   tech=tech, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
+                                   strat_par_y=1)
+
+                t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0,
+                                       seed=[100, 200, 300])
+                f_par = FitnessParameter(task_tot_time=10000, num_lifts=10, num_sats=1, num_shuttle=1)
+                par, res = Opt.optimization(par, t_par, f_par, 12, 3)
+                result[tech][nz] = res
+                print(str(tech) + " " + str(nz) + " :\n" + str(result[tech][nz]))
+                print("time: " + str(time() - start))
+                print("\n")
+
+        with open("results.json", "w") as f:
+            f.write(jsonpickle.encode(result))
+        with open("results.json", "r") as f:
+            result = jsonpickle.loads(f.read())
+
+        c = "rgbyk"
+        for p in res.__dict__:
+            for i in range(0, len(result)):
+                lists = sorted(result[i].items(), key=lambda x: int(x[0]))
+                x, y = zip(*lists)  # unpack a l
+                # ist of pairs into two tuples
+                y = [a.__dict__[p] for a in y]
+                plt.plot(x, y, c[i], label="tech" + str(i))
+            plt.ylabel(p)
+            plt.xlabel('Nz')
+            plt.legend()
+            plt.savefig("../graphs1/" + str(p) + ".png", bbox_inches='tight')
+            # plt.show()
+            plt.close()
+
+
+    start = time()
+    graphs()
+    print("\n\n")
+    print(time() - start)
