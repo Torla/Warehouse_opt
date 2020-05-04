@@ -256,9 +256,9 @@ if __name__ == '__main__':
                 print("time: " + str(time() - start))
                 print("\n")
 
-        with open("results.json", "w") as f:
+        with open("output/results.json", "w") as f:
             f.write(jsonpickle.encode(result))
-        with open("results.json", "r") as f:
+        with open("output/results.json", "r") as f:
             result = jsonpickle.loads(f.read())
 
         c = "rgbyk"
@@ -272,8 +272,7 @@ if __name__ == '__main__':
             plt.ylabel(p)
             plt.xlabel('Nz')
             plt.legend()
-            plt.savefig("../graphs1/" + str(p) + ".png", bbox_inches='tight')
-            # plt.show()
+            plt.savefig("../output/" + str(p) + ".png", bbox_inches='tight')
             plt.close()
 
 
