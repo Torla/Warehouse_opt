@@ -80,16 +80,35 @@ class Warehouse:
         else:
             item_to_add = trace_parameter.start_fullness
         i = 0
-        while i < item_to_add:
-            task = Task(Item("Tipo" + str(
-                np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
-                        OrderType.DEPOSIT)
-            Strategy.bay = None
-            Strategy.strategy1_static = None
-            selection = Strategy.__dict__["strategy" + str(parameter.strategy)] \
-                .__func__(task, sim, parameter)
-            assert isinstance(selection, int)
-            channel = sim.find_res_by_id(selection, False)
-            channel.items.append(task.item)
-            channel.items.extend([Item(task.item.item_type) for i in range(0, channel.capacity)])
-            i += channel.capacity
+
+        if parameter.strategy == 1:
+            def w_dist(x, y, par):
+                assert isinstance(par, SimulationParameter)
+                return abs(x.level - y.level) * par.strategy_par_y * par.Ly + abs(
+                    x.x - y.x) * par.strategy_par_x * par.Lx
+
+            channels = sorted(self.sim.find_res(lambda x: isinstance(x, Channel), free=False),
+                              key=lambda x: w_dist(x.position, bay.position, parameter))
+            while i < item_to_add:
+                task = Task(Item("Tipo" + str(
+                    np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
+                            OrderType.DEPOSIT)
+                Strategy.bay = None
+                Strategy.strategy1_static = None
+                channel = channels.pop(0)
+                channel.items.extend([Item(task.item.item_type) for i in range(0, channel.capacity)])
+                i += channel.capacity
+
+        else:
+            while i < item_to_add:
+                task = Task(Item("Tipo" + str(
+                    np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
+                            OrderType.DEPOSIT)
+                Strategy.bay = None
+                Strategy.strategy1_static = None
+                selection = Strategy.__dict__["strategy" + str(parameter.strategy)] \
+                    .__func__(task, sim, parameter)
+                assert isinstance(selection, int)
+                channel = sim.find_res_by_id(selection, False)
+                channel.items.extend([Item(task.item.item_type) for i in range(0, channel.capacity)])
+                i += channel.capacity

@@ -234,17 +234,18 @@ if __name__ == '__main__':
         area = 800
         for tech in range(0, 3):
             result.append({})
-            for nz in range(30, 301, 30):
+            for nz in range(20, 201, 30):
+                lifts = OptRange(1, 10) if tech == 2 else OptRange(math.ceil(nz / 6), math.ceil(nz / 6) + 10)
                 start = time()
                 par = OptParameter(Nx=1, Ny=OptRange(2, 10), Nz=nz,
                                    Lx=1, Ly=1.5, Lz=1.2, Cy=0,
                                    Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                    Wli=1850, Wsh=850, Wsa=350,
                                    Cr=0.02, Fr=1.15, rendiment=0.9,
-                                   Nli=OptRange(1, 10), Nsh=OptRange(1, 10), Nsa=OptRange(1, 10),
+                                   Nli=lifts, Nsh=OptRange(1, 10), Nsa=OptRange(1, 10),
                                    bay_level=0,
                                    tech=tech, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
-                                   strat_par_y=0.5)
+                                   strat_par_y=OptRange(0, 1, decimal=True))
 
                 t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0.5,
                                        seed=[100, 200, 300])

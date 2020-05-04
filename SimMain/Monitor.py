@@ -41,6 +41,7 @@ class Monitor:
             self.double_CT_V = 1000000000
             self.single_CT_E = 1000000000
             self.double_CT_E = 1000000000
+            self.strat_param = 1000000000
 
         def __str__(self):
             return "Average task wait: " + str(self.mean_task_wait) \
@@ -63,7 +64,8 @@ class Monitor:
                    + "\nSingle cycle: " + str(self.single_CT) + " var: " + str(self.single_CT_V) \
                    + "\nDouble cycle: " + str(self.double_CT) + " var: " + str(self.double_CT_V) \
                    + "\nSingle cycle energy: " + str(self.single_CT_E) \
-                   + "\nDouble cycle energy: " + str(self.double_CT_E)
+                   + "\nDouble cycle energy: " + str(self.double_CT_E) \
+                   + "\nStrat par: " + str(self.strat_param)
 
     def __init__(self, sim):
         assert isinstance(sim, Simulation)
@@ -93,7 +95,7 @@ class Monitor:
                 (self.due_tasks - task_done) / self.due_tasks < 0.05 or self.due_tasks - task_done < par.Nli):
             task_done = self.due_tasks
 
-        res.completeness = task_done/self.due_tasks
+        res.completeness = task_done / self.due_tasks
 
         res.task_done = task_done
 
@@ -137,8 +139,13 @@ class Monitor:
         res.lifts_util = np.average(
             [i.blocked_time for i in self.sim.find_performer(lambda x: isinstance(x, Lift), False)]) / res.working_time
         res.shut_util = np.average(
-            [i.blocked_time for i in self.sim.find_performer(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
+            [i.blocked_time for i in
+             self.sim.find_performer(lambda x: isinstance(x, Shuttle), False)]) / res.working_time
         res.sat_util = np.average(
-            [i.blocked_time for i in self.sim.find_performer(lambda x: isinstance(x, Satellite), False)]) / res.working_time
-
+            [i.blocked_time for i in
+             self.sim.find_performer(lambda x: isinstance(x, Satellite), False)]) / res.working_time
+        if par.strategy_par_y != 0:
+            res.strat_param = par.strategy_par_x / par.strategy_par_y
+        else:
+            res.strat_param = -1 if par.strategy_par_x == 0 else 10
         return res

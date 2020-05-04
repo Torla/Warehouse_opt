@@ -1,4 +1,5 @@
 from enum import Enum
+from functools import wraps
 
 import simpy
 from simpy import Container
@@ -48,6 +49,7 @@ class Simulation(simpy.Environment):
         self.manager = Manager(self)
 
         self.free_res = Resources(self)
+        self.free_map = {}
         self.all_res = {}
         self.all_performer = []
 
@@ -66,6 +68,7 @@ class Simulation(simpy.Environment):
         assert isinstance(res, Resource)
         self.all_res[res.id] = res
         self.free_res.items.append(res)
+        self.free_map[res.id] = True
         if isinstance(res, Performer):
             self.all_performer.append(res)
 
@@ -109,7 +112,7 @@ class Simulation(simpy.Environment):
 
     def is_free(self, res):
         assert isinstance(res, Resource)
-        return res in self.free_res.items
+        return self.free_map[res.id]
 
     def put_res(self, res):
         assert (isinstance(res, Resource))

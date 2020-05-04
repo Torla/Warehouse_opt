@@ -7,8 +7,24 @@ from IdeaSim import Simulation
 
 
 class Resources(FilterStore):
-    def __init__(self, env, capacity=float('inf')):
-        super().__init__(env, capacity)
+    def __init__(self, sim, capacity=float('inf')):
+        assert (isinstance(sim, Simulation.Simulation))
+        super().__init__(sim, capacity)
+        self.sim = sim
+
+    def _do_put(self, event):
+        super()._do_put(event)
+        self.sim.free_map[event.item.id] = True
+
+    def _do_get(self, event):
+        for item in self.items:
+            if event.filter(item):
+                self.items.remove(item)
+                event.succeed(item)
+                self.sim.free_map[item.id] = False
+                break
+        return True
+
 
 
 class Resource:
@@ -30,8 +46,6 @@ class Performer(Resource):
     def __init__(self, sim):
         super().__init__(sim)
         self.action_map = {}
-
-
 
     class IllegalAction(Exception):
         def __init__(self, msg):
