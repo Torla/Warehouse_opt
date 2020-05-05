@@ -2,6 +2,7 @@ import copy
 import random
 import time
 
+import jsonpickle
 from math import floor, sqrt
 import numpy as np
 
@@ -226,8 +227,27 @@ if __name__ == '__main__':
         res = Test.test(parameter=par, trace_parameter=t_par, log=False)
         print(res)
 
+    def only_plot():
+        if __name__ == '__main__':
+
+            with open("../resultsLowNz.json", "r") as f:
+                result = jsonpickle.loads(f.read())
+
+            c = "rgbyk"
+            for p in Monitor.Results().__dict__:
+                for i in range(0, len(result)):
+                    lists = sorted(result[i].items(), key=lambda x: int(x[0]))
+                    x, y = zip(*lists)  # unpack a l
+                    # ist of pairs into two tuples
+                    y = [a.__dict__[p] for a in y]
+                    plt.plot(x, y, c[i], label="tech" + str(i))
+                plt.ylabel(p)
+                plt.xlabel('Nz')
+                plt.legend()
+                plt.savefig("../output/lowNz/" + str(p) + ".png", bbox_inches='tight')
+                plt.close()
+
 
     start_time = time.time()
-    test()
+    only_plot()
     print(time.time() - start_time)
-    # test()

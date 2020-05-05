@@ -2,6 +2,7 @@ import copy
 import csv
 import os
 import random
+import sys
 from time import time
 from typing import List
 
@@ -247,18 +248,18 @@ if __name__ == '__main__':
                                    tech=tech, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
                                    strat_par_y=OptRange(0, 1, decimal=True))
 
-                t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0.5,
+                t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                        seed=[100, 200, 300])
                 f_par = FitnessParameter(task_tot_time=100, num_lifts=10, num_sats=1, num_shuttle=1)
-                par, res = Opt.optimization(par, t_par, f_par, 10, 3)
+                par, res = Opt.optimization(par, t_par, f_par, 10, int(sys.argv[1]))
                 result[tech][nz] = res
                 print(str(tech) + " " + str(nz) + " :\n" + str(result[tech][nz]))
                 print("time: " + str(time() - start))
                 print("\n")
 
-        with open("output/results.json", "w") as f:
+        with open("results.json", "w") as f:
             f.write(jsonpickle.encode(result))
-        with open("output/results.json", "r") as f:
+        with open("results.json", "r") as f:
             result = jsonpickle.loads(f.read())
 
         c = "rgbyk"
@@ -272,8 +273,10 @@ if __name__ == '__main__':
             plt.ylabel(p)
             plt.xlabel('Nz')
             plt.legend()
-            plt.savefig("../output/" + str(p) + ".png", bbox_inches='tight')
+            plt.savefig("output/" + str(p) + ".png", bbox_inches='tight')
             plt.close()
+
+
 
 
     start = time()
