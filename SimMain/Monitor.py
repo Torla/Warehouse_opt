@@ -9,6 +9,17 @@ from Resources.Shuttle import Shuttle
 
 
 class Monitor:
+    class CostParam:
+
+        def __init__(self, lift, shuttle_fork, shuttle, satellite, transelevator, scaffolding) -> None:
+            self.lift = lift
+            self.shuttle_fork = shuttle_fork
+            self.shuttle = shuttle
+            self.satellite = satellite
+            self.transelevator = transelevator
+            self.scaffolding = scaffolding
+
+
     class Results:
         def __init__(self):
             self.mean_task_wait = 1000000000
@@ -17,7 +28,7 @@ class Monitor:
             self.Th = 0
             self.completeness = 0
             self.working_time = 1000000000
-            self.task_done = 0
+            self.tasks_done = 0
             self.time_per_task = 1000000000
             self.energy_consumed = 1000000000
             self.energy_per_task = 1000000000
@@ -42,15 +53,16 @@ class Monitor:
             self.single_CT_E = 1000000000
             self.double_CT_E = 1000000000
             self.strat_param = 1000000000
+            self.cost = 0
 
         def __str__(self):
             return "Average task wait: " + str(self.mean_task_wait) \
                    + "\nAverage task op time: " + str(self.mean_task_op_time) \
                    + "\nAverage task tot time: " + str(self.mean_task_tot_time) \
                    + "\nTh: " + str(3600 / self.mean_task_tot_time) \
-                   + "\ntask done: " + str(self.task_done) \
-                   + "\nEnergy consumed: " + str(self.energy_consumed / 1000) + " KW/h" \
-                   + "\nEnergy consumed per tasks: " + str(self.energy_per_task) + " w/h" \
+                   + "\ntask done: " + str(self.tasks_done) \
+                   + "\nEnergy consumed: " + str(self.energy_consumed / 1000) + " KWh" \
+                   + "\nEnergy consumed per tasks: " + str(self.energy_per_task) + " wh" \
                    + "\nWorking time: " + str(self.working_time) \
                    + "\nTime per task: " + str(self.time_per_task) \
                    + "\nArea: " + str(self.area) \
@@ -65,7 +77,8 @@ class Monitor:
                    + "\nDouble cycle: " + str(self.double_CT) + " var: " + str(self.double_CT_V) \
                    + "\nSingle cycle energy: " + str(self.single_CT_E) \
                    + "\nDouble cycle energy: " + str(self.double_CT_E) \
-                   + "\nStrat par: " + str(self.strat_param)
+                   + "\nStrat par: " + str(self.strat_param)\
+                   + "\nCost: " + str(self.cost)
 
     def __init__(self, sim):
         assert isinstance(sim, Simulation)
@@ -78,7 +91,7 @@ class Monitor:
         self.double_cycle_e = []
         self.working_time = 0
 
-    def get_result(self) -> Results:
+    def get_result(self, cost_param = None) -> Results:
         par = self.sim.get_status().parameter
 
         res = Monitor.Results()
@@ -97,7 +110,7 @@ class Monitor:
 
         res.completeness = task_done / self.due_tasks
 
-        res.task_done = task_done
+        res.tasks_done = task_done
 
         res.mean_task_tot_time = self.sim.now / task_done
         res.Th = 3600 / res.mean_task_tot_time
@@ -117,8 +130,8 @@ class Monitor:
         res.volume = res.area * par.Ny
 
         res.num_lifts = par.Nli
-        res.num_shuttles = par.Nsh
-        res.num_sats = par.Nsa
+        res.num_shuttles = par.Nsh * par.Nli
+        res.num_sats = par.Nsa * res.num_shuttles
 
         if len(self.single_cycle) > 0:
             res.single_CT = np.average(self.single_cycle)
@@ -148,4 +161,15 @@ class Monitor:
             res.strat_param = par.strategy_par_x / par.strategy_par_y
         else:
             res.strat_param = -1 if par.strategy_par_x == 0 else 10
+
+        if cost_param is not None:
+            assert isinstance(cost_param,Monitor.CostParam)
+            res.cost = cost_param.lift * res.num_lifts + cost_param.scaffolding * res.area * res.Ny
+            if par.tech == 2:
+                res.cost += cost_param.shuttle * res.num_shuttles
+                res.cost += cost_param.satellite * res.num_sats
+            if par.tech == 1:
+                res.cost += cost_param.shuttle_fork * res.num_shuttles
+            if par.tech == 0:
+                res.cost += cost_param.transelevator * res.num_lifts
         return res

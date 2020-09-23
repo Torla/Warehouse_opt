@@ -11,6 +11,7 @@ class TaskDispatcher:
 
     def add_future_task(self, time, task):
         self.tasks[time] = task
+        Event(self.sim, time, "new_task", param={"task": self.tasks[time]})
 
     def run(self):
         for time in self.tasks.keys():

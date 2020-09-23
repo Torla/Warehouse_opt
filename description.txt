@@ -35,7 +35,7 @@ IdeaSim:
         ActionGraph
 
     Action:
-        This module define class to manage action to be performed by Perform:
+        This module define classes to manage action to be performed by Perform:
         Action:
             The action class is an action to be performed, it as :
                 action_graph -> the relative actionGraph

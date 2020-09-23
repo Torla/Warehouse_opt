@@ -17,7 +17,7 @@ import multiprocessing as mp
 
 class Test:
     @staticmethod
-    def test(parameter, trace_parameter, log=False):
+    def test(parameter, trace_parameter, cost_par=None, log=False):
         class Status:
             def __init__(self, parameter, monitor):
                 self.parameter = parameter
@@ -38,7 +38,7 @@ class Test:
         warehouse = Warehouse(sim, parameter, trace_parameter)
         sim.run(until=trace_parameter.sim_time)
 
-        ret = sim.get_status().monitor.get_result()
+        ret = sim.get_status().monitor.get_result(cost_param=cost_par)
 
         return ret
 
@@ -222,10 +222,13 @@ if __name__ == '__main__':
                                   Nli=34, Nsh=4, Nsa=4,
                                   bay_level=0,
                                   tech=0, strat=1, strat_par_x=1, strat_par_y=1)
-        t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0,
+        t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                seed=1023)
-        res = Test.test(parameter=par, trace_parameter=t_par, log=False)
+        c_par = Monitor.CostParam(lift=20000, shuttle=50000, shuttle_fork=35000, satellite=35000, transelevator=40000,
+                                  scaffolding=30)
+        res = Test.test(parameter=par, trace_parameter=t_par, cost_par=c_par, log=True)
         print(res)
+
 
     def only_plot():
         if __name__ == '__main__':
@@ -249,5 +252,5 @@ if __name__ == '__main__':
 
 
     start_time = time.time()
-    only_plot()
+    test()
     print(time.time() - start_time)

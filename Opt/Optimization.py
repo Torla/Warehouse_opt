@@ -215,16 +215,20 @@ class Solution(List):
 if __name__ == '__main__':
     def test():
         par = OptParameter(Nx=10, Ny=10, Nz=100,
-                           Lx=5, Ly=5, Lz=5, Cy=1,
-                           Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
+                           Lx=1, Ly=1.5, Lz=1.2, Cy=0,
+                           Ax=OptRange(0.1, 1.5), Vx=OptRange(0.1, 5.5), Ay=OptRange(0.1, 1.5), Vy=OptRange(0.1, 1.5),
+                           Az=OptRange(0.1, 1.5),
+                           Vz=OptRange(0, 2.5),
                            Wli=1850, Wsh=850, Wsa=350,
                            Cr=0.02, Fr=1.15, rendiment=0.9,
                            Nli=OptRange(1, 5), Nsh=OptRange(1, 5), Nsa=OptRange(1, 5),
+                           # todo collega questi con le dimensioni Nz/2 Nx Ny
                            bay_level=0,
-                           tech=1, strat=1, strat_par_x=1,
-                           strat_par_y=1)
+                           tech=1, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
+                           strat_par_y=OptRange(0, 1, decimal=True))
 
-        t_par = TraceParameter(sim_time=6000, types=[0.4, 0.3, 0.3], int_mean=50, start_fullness=0.1,
+        t_par = TraceParameter(sim_time=6000, types=np.repeat(0.1, 10), int_mean=200, start_fullness=0.4,
+                               # todo 0.40 0.60 0.80
                                seed=[100, 200, 300])
         f_par = FitnessParameter(num_lifts=10, num_sats=1, num_shuttle=1)
         str(Opt.optimization(par, t_par, f_par, 10, 3))
@@ -277,9 +281,8 @@ if __name__ == '__main__':
             plt.close()
 
 
-
-
     start = time()
+    print("start")
     graphs()
     print("\n\n")
     print(time() - start)
