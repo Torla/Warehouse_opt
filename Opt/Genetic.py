@@ -6,15 +6,15 @@ from numpy import average
 import Opt.Optimization
 
 
-def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, mut_change, mut_perc, bottle_neck_prob, bottle_neck_swap,
+def opt(opt_par, t_par, f_par, c_par, pop_size, pos_swap, mut, mut_change, mut_perc, bottle_neck_prob, bottle_neck_swap,
         n_process):
     Opt.Optimization.Solution.set_process_pool(n_process)
 
     class Chromosome(Opt.Optimization.Solution):
 
-        def __init__(self, opt_par, t_par, fitness_par, mut, array=None) -> None:
+        def __init__(self, opt_par, t_par, c_par, fitness_par, mut, array=None) -> None:
             self.mut = mut
-            super().__init__(opt_par, t_par, fitness_par, array)
+            super().__init__(opt_par, t_par, c_par, fitness_par, array)
             if array is not None:
                 self.mutation()
 
@@ -42,7 +42,7 @@ def opt(opt_par, t_par, f_par, pop_size, pos_swap, mut, mut_change, mut_perc, bo
     class Population:
         def __init__(self, opt_par, t_par, f_par, mut, size, pop_swap):
             self.pop_swap = pop_swap
-            self.pop = [Chromosome(opt_par, t_par, f_par, mut) for i in range(0, size)]
+            self.pop = [Chromosome(opt_par, t_par, f_par, c_par, mut) for i in range(0, size)]
 
         def generation(self):
 

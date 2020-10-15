@@ -221,11 +221,12 @@ if __name__ == '__main__':
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
                                   Nli=34, Nsh=4, Nsa=4,
                                   bay_level=0,
-                                  tech=0, strat=1, strat_par_x=1, strat_par_y=1)
-        t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
+                                  tech=1, strat=1, strat_par_x=1, strat_par_y=1)
+        t_par = TraceParameter(sim_time=360 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                seed=1023)
-        c_par = Monitor.CostParam(lift=20000, shuttle=50000, shuttle_fork=35000, satellite=35000, transelevator=40000,
-                                  scaffolding=30)
+        c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
+                                  satellite=35000, transelevator=40000,
+                                  scaffolding=30, energy_cost=0.0356 / 1000)
         res = Test.test(parameter=par, trace_parameter=t_par, cost_par=c_par, log=True)
         print(res)
 

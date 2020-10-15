@@ -30,17 +30,17 @@ from Trace.Trace import TraceParameter
 
 class Opt:
     @staticmethod
-    def optimization(opt_par, trace_par, fitness_par, generations, processes):
+    def optimization(opt_par, trace_par, fitness_par, c_par, generations, processes):
         res = []
         t = []
         s = time()
         from Opt.Genetic import opt
         count = 0
-        for i in opt(opt_par, trace_par, fitness_par, 50, 0.2, 1, -0.1, 0.3, 0, 0.5, processes):
+        for i in opt(opt_par, trace_par, fitness_par, c_par, 10000, 0.2, 0.1, 0, 0.3, 0.1, 0.8, processes):
             # print("\n\nt: " + str(time() - s))
-            # i.get_fitness()
-            # print("fit: " + str(i.get_fitness()))
-            # print(str(i.get_average_results()))
+            i.get_fitness()
+            print("fit: " + str(i.get_fitness()))
+            print(str(i.get_average_results()))
             # res.append(i.get_fitness())
             print(count)
             count += 1
@@ -89,13 +89,19 @@ class OptParameter(SimulationParameter):
         return i
 
 
-class FitnessParameter(Monitor.Results):
+class FitnessParameter(Monitor.Results):  # todo rewrite this
 
     def __init__(self, mean_task_wait=0, task_op_time=0, task_tot_time=0, working_time=0, time_per_task=0,
                  energy_consumed=0., area=0, volume=0, num_lifts=0, num_shuttle=0, num_sats=0, single_CT=0,
                  double_CT=0, single_CT_E=0, double_CT_E=0, single_CT_V=0, double_CT_V=0, lifts_proc=0, shut_proc=0,
-                 sat_proc=0, lifts_util=0, sat_util=0, shut_util=0, energy_per_task=0):
+                 sat_proc=0, lifts_util=0, sat_util=0, shut_util=0, energy_per_task=0, cost=0, completeness=0, Th=0):
         super().__init__()
+        self.Ny = 0
+        self.Nx = 0
+        self.Nz = 0
+        self.strat_param = 0
+        self.Th = Th
+        self.completeness = completeness
         self.mean_task_wait = mean_task_wait
         self.mean_task_op_time = task_op_time
         self.mean_task_tot_time = task_tot_time
@@ -120,17 +126,19 @@ class FitnessParameter(Monitor.Results):
         self.double_CT_V = double_CT_V
         self.single_CT_E = single_CT_E
         self.double_CT_E = double_CT_E
+        self.cost = cost
 
 
 class Solution(List):
     p_pool = None
 
-    def __init__(self, opt_par, t_par, fitness_par, array=None) -> None:
+    def __init__(self, opt_par, t_par, fitness_par, c_par, array=None) -> None:
         # assert isinstance(opt_par, OptParameter)
         # assert isinstance(fitness_par, FitnessParameter)
         self.opt_par = opt_par
         self.t_par = t_par
         self.fitness_par = fitness_par
+        self.cost_par = c_par
         self.fitness = None
         if array is None:
             super().__init__([])
@@ -145,7 +153,7 @@ class Solution(List):
             n = copy.copy(t_par)
             n.seed = seed
             seeds.append(n)
-        self.res = Solution.p_pool.starmap_async(Test.test, [(self.opt_par.map(self), t) for t in seeds])
+        self.res = Solution.p_pool.starmap_async(Test.test, [(self.opt_par.map(self), t, self.cost_par) for t in seeds])
 
         self.saved = False
 
@@ -214,24 +222,27 @@ class Solution(List):
 
 if __name__ == '__main__':
     def test():
-        par = OptParameter(Nx=10, Ny=10, Nz=100,
+        par = OptParameter(Nx=OptRange(1, 100), Ny=OptRange(1, 10), Nz=OptRange(1, 100),
                            Lx=1, Ly=1.5, Lz=1.2, Cy=0,
                            Ax=OptRange(0.1, 1.5), Vx=OptRange(0.1, 5.5), Ay=OptRange(0.1, 1.5), Vy=OptRange(0.1, 1.5),
                            Az=OptRange(0.1, 1.5),
                            Vz=OptRange(0, 2.5),
                            Wli=1850, Wsh=850, Wsa=350,
                            Cr=0.02, Fr=1.15, rendiment=0.9,
-                           Nli=OptRange(1, 5), Nsh=OptRange(1, 5), Nsa=OptRange(1, 5),
+                           Nli=OptRange(1, 10), Nsh=OptRange(1, 5), Nsa=OptRange(1, 5),
                            # todo collega questi con le dimensioni Nz/2 Nx Ny
                            bay_level=0,
-                           tech=1, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
+                           tech=2, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
                            strat_par_y=OptRange(0, 1, decimal=True))
 
-        t_par = TraceParameter(sim_time=6000, types=np.repeat(0.1, 10), int_mean=200, start_fullness=0.4,
+        t_par = TraceParameter(sim_time=6000, types=np.repeat(0.1, 10), int_mean=50, start_fullness=0.4,
                                # todo 0.40 0.60 0.80
                                seed=[100, 200, 300])
-        f_par = FitnessParameter(num_lifts=10, num_sats=1, num_shuttle=1)
-        str(Opt.optimization(par, t_par, f_par, 10, 3))
+        f_par = FitnessParameter(completeness=-1000000000, cost=1, energy_consumed=1)
+        c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
+                                  satellite=35000, transelevator=40000,
+                                  scaffolding=30, energy_cost=0.0356 / 1000)
+        str(Opt.optimization(par, t_par, f_par, c_par, 100000, 4))
 
 
     def graphs():
@@ -255,7 +266,7 @@ if __name__ == '__main__':
                 t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                        seed=[100, 200, 300])
                 f_par = FitnessParameter(task_tot_time=100, num_lifts=10, num_sats=1, num_shuttle=1)
-                par, res = Opt.optimization(par, t_par, f_par, 10, int(sys.argv[1]))
+                par, res = Opt.optimization(par, t_par, f_par, 10, int(sys.argv[1]), 4)
                 result[tech][nz] = res
                 print(str(tech) + " " + str(nz) + " :\n" + str(result[tech][nz]))
                 print("time: " + str(time() - start))
@@ -283,6 +294,6 @@ if __name__ == '__main__':
 
     start = time()
     print("start")
-    graphs()
+    test()
     print("\n\n")
     print(time() - start)
