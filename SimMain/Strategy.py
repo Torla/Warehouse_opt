@@ -54,7 +54,7 @@ class Strategy:
         try:
             selection = Strategy.__dict__["strategy" + str(parameter.strategy)] \
                 .__func__(event.param["task"], event.sim, parameter)
-        except KeyError:
+        except KeyError as e:
             event.sim.logger.log("Strategy or technology selected is not defined", type=event.sim.Logger.Type.FAIL)
             exit(-1)
         return Strategy.implement(event.param["task"], selection, event.sim, parameter)
@@ -676,20 +676,22 @@ class Strategy:
                 x.x - y.x) * par.strategy_par_x * par.Lx
 
         def init_static():
-            Strategy.strategy1_static = sorted([(c, w_dist(c.position, Strategy.bay.position, parameter)) for c in
-                                                sim.find_res(lambda x: isinstance(x, Channel), free=False)],
-                                               key=lambda x: x[1])
+                Strategy.strategy1_static = sorted([(c, w_dist(c.position, Strategy.bay.position, parameter)) for c in
+                                                    sim.find_res(lambda x: isinstance(x, Channel), free=False)],
+                                                   key=lambda x: x[1])
 
         channels = []
 
         if Strategy.bay is None:
             Strategy.bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
 
-        if Strategy.strategy1_static is None:
+        if Strategy.strategy1_static is None or sim.now < 100:
             init_static()
 
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel
+
+
 
             min_dist = 1000000
             for x in Strategy.strategy1_static:
@@ -719,6 +721,7 @@ class Strategy:
                 raise Strategy.NoItemToTake(task, delay=60)
 
         ret = np.random.choice(channels)
+
         return ret.id
 
     # emptier

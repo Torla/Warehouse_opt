@@ -1,9 +1,11 @@
 import copy
+import csv
+import os
 import random
 import time
 
 import jsonpickle
-from math import floor, sqrt
+from math import floor, sqrt, ceil
 import numpy as np
 
 from IdeaSim.Simulation import Simulation
@@ -24,7 +26,7 @@ class Test:
                 self.monitor = monitor
 
         # todo temporari
-        parameter.Nx = round(4000 / (parameter.Nz * parameter.Ny))
+        # parameter.Nx = round(4000 / (parameter.Nz * parameter.Ny))
         # print("\n\n")
         # print(parameter.Nx)
         # print(parameter.Ny)
@@ -49,166 +51,36 @@ class Test:
 
 if __name__ == '__main__':
     def graphs():
-        p_pool = mp.Pool(3)
-        result = []
-        result1 = []
-        result2 = []
-        result3 = []
-        result4 = []
-        result5 = []
-        result6 = []
-        area = 800
+
         for tech in range(0, 3):
-            result.append({})
-            result1.append({})
-            result2.append({})
-            result3.append({})
-            result4.append({})
-            result5.append({})
-            result6.append({})
-            for nz in range(30, 200, 30):
-                par = SimulationParameter(Nx=floor(area / nz), Ny=10, Nz=nz,
+            for xpar in [0.01]:
+                par = SimulationParameter(Nx=50, Ny=10, Nz=50,
                                           Lx=1, Ly=1.5, Lz=1.2, Cy=0,
                                           Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                           Wli=1850, Wsh=850, Wsa=350,
                                           Cr=0.02, Fr=1.15, rendiment=0.9,
-                                          Nli=1, Nsh=4, Nsa=20,
-                                          bay_level=1.5,
-                                          tech=tech, strat=1, strat_par_x=1, strat_par_y=1)
-                t_par = TraceParameter(sim_time=2500, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0,
-                                       seed=[1, 2, 3])
-                res = []
-                seeds = []
-                for seed in t_par.seed:
-                    n = copy.copy(t_par)
-                    n.seed = seed
-                    seeds.append(n)
-                res = p_pool.starmap_async(Test.test, [(par, t) for t in seeds]).get()
-                result[tech][nz] = 3600 / np.average([i.mean_task_tot_time for i in res])
-                result1[tech][nz] = np.average([i.single_CT for i in res])
-                result2[tech][nz] = np.average([i.double_CT for i in res])
-                result3[tech][nz] = np.average([i.energy_per_task for i in res])
-                result4[tech][nz] = np.average([i.lifts_util for i in res])
-                result5[tech][nz] = np.average([i.shut_util for i in res])
-                result6[tech][nz] = np.average([i.sat_util for i in res])
-                print(str(tech) + " " + str(nz) + " " + str(result[tech][nz]))
-                print(str(tech) + " " + str(nz) + " " + str(result1[tech][nz]))
-                print(str(tech) + " " + str(nz) + " " + str(result2[tech][nz]))
-                print(str(tech) + " " + str(nz) + " " + str(result3[tech][nz]))
-                print(str(tech) + " " + str(nz) + " " + str(result4[tech][nz]))
-                print(str(tech) + " " + str(nz) + " " + str(result5[tech][nz]))
-                print(str(tech) + " " + str(nz) + " " + str(result6[tech][nz]))
-                print("\n")
+                                          Nli=3, Nsh=3, Nsa=2,
+                                          bay_level=0,
+                                          tech=tech, strat=1, strat_par_x=xpar, strat_par_y=1)
+                t_par = TraceParameter(sim_time=3600 * 6, types=[0.1 for i in range(10)], int_mean=25,
+                                       start_fullness=0.5,
+                                       seed=[1])
+                c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
+                                          satellite=35000, transelevator=40000,
+                                          scaffolding=30, energy_cost=0.0356 / 1000)
 
-        c = "rgbyk"
-        for i in range(0, len(result)):
-            lists = sorted(result[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-        # lists = sorted(result[1].items())
-        # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-        # plt.plot(x, y, "y", label="tech1")
-        # lists = sorted(result[2].items())
-        # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-        # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('Th')
-        plt.xlabel('Nz')
-        plt.legend()
-
-        plt.show()
-
-        for i in range(0, len(result1)):
-            lists = sorted(result1[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-            # lists = sorted(result[1].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "y", label="tech1")
-            # lists = sorted(result[2].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('Single_CT')
-        plt.xlabel('Nz')
-        plt.legend()
-
-        plt.show()
-
-        for i in range(0, len(result2)):
-            lists = sorted(result2[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-            # lists = sorted(result[1].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "y", label="tech1")
-            # lists = sorted(result[2].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('Duoble_CT')
-        plt.xlabel('Nz')
-        plt.legend()
-
-        plt.show()
-
-        for i in range(0, len(result3)):
-            lists = sorted(result3[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-            # lists = sorted(result[1].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "y", label="tech1")
-            # lists = sorted(result[2].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('w/h')
-        plt.xlabel('Nz')
-        plt.legend()
-        plt.show()
-
-        for i in range(0, len(result4)):
-            lists = sorted(result4[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-            # lists = sorted(result[1].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "y", label="tech1")
-            # lists = sorted(result[2].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('lift util')
-        plt.xlabel('Nz')
-        plt.legend()
-        plt.show()
-
-        for i in range(0, len(result5)):
-            lists = sorted(result5[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-            # lists = sorted(result[1].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "y", label="tech1")
-            # lists = sorted(result[2].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('shuttle util')
-        plt.xlabel('Nz')
-        plt.legend()
-        plt.show()
-
-        for i in range(0, len(result6)):
-            lists = sorted(result6[i].items())
-            x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            plt.plot(x, y, c[i], label="tech" + str(i))
-            # lists = sorted(result[1].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "y", label="tech1")
-            # lists = sorted(result[2].items())
-            # x, y = zip(*lists)  # unpack a list of pairs into two tuples
-            # plt.plot(x, y, "b", label="tech2")
-        plt.ylabel('sat util')
-        plt.xlabel('Nz')
-        plt.legend()
-
-        plt.show()
+                res = Test.test(parameter=par, trace_parameter=t_par, cost_par=c_par, log=True)
+                d = par.__dict__
+                t = copy.copy(t_par)
+                t.seed = t_par.seed[0]
+                d.update(t.__dict__)
+                d.update(res.__dict__)
+                with open("../data/strategy_par_x.csv", mode="a+", newline='') as f:
+                    w = csv.DictWriter(f,
+                                       fieldnames=(list(d.keys())))
+                    if os.stat(f.name).st_size < 10:
+                        w.writeheader()
+                    w.writerow(d)
 
 
     def test():
@@ -221,7 +93,7 @@ if __name__ == '__main__':
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
                                   Nli=34, Nsh=4, Nsa=4,
                                   bay_level=0,
-                                  tech=1, strat=1, strat_par_x=1, strat_par_y=1)
+                                  tech=0, strat=1, strat_par_x=1, strat_par_y=1)
         t_par = TraceParameter(sim_time=360 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
                                seed=1023)
         c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
@@ -253,5 +125,5 @@ if __name__ == '__main__':
 
 
     start_time = time.time()
-    test()
+    graphs()
     print(time.time() - start_time)

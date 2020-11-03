@@ -1,0 +1,198 @@
+tech 0  cost_f 1:
+{'rendiment': 0.9, 'Fr': 1.15, 'Cr': 0.02, 'Nsa': 1, 'Nsh': 1, 'Nli': 2, 'Vz': 1.2, 'Az': 0.7, 'Vy': 0.9, 'Ay': 0.8, 'Vx': 4, 'Ax': 0.8, 'Cy': 0, 'Wli': 1850, 'Wsh': 850, 'Wsa': 350, 'Lz': 1.2, 'Ly': 1.5, 'Lx': 1, 'Nz': 10, 'Ny': 4, 'Nx': 10, 'bay_level': 0, 'tech': 0, 'strategy': 1, 'strategy_par_x': 6.966550236449118, 'strategy_par_y': 1}
+
+
+
+Average task wait: 0.0
+Average task op time: 14.86355140186916
+Average task tot time: 20.186915887850468
+Th: 178.33333333333334
+Completeness: 1.0
+task done: 535.0
+Energy consumed: 6.2223414481624 KWh
+Energy consumed per tasks: 11.630544762920373 wh
+Working time: 7952.0
+Time per task: 27.77861163227017
+Area: 100.0
+Volume: 400.0
+Lifts: 2.0
+Shuttles: 2.0
+Sats: 2.0
+Lifts util: 0.08312374245472837 / 0.6696428571428571
+Shuttles util: 0.018108651911468814 / 0.6696428571428571
+Sats util: 0.7440266599597586 / 0.6696428571428571
+Single cycle: 40.56542056074766 var: 840.3485238885492
+Double cycle: 14.694852941176471 var: 666.4179146842561
+Single cycle energy: 21.279754966561836
+Double cycle energy: 5.730391707301273
+Strat par: 6.966550236449118
+Cost: 3.3718007074886334
+
+
+
+
+tech 0  cost_f 0:
+{'rendiment': 0.9, 'Fr': 1.15, 'Cr': 0.02, 'Nsa': 1, 'Nsh': 1, 'Nli': 5, 'Vz': 1.2, 'Az': 0.7, 'Vy': 0.9, 'Ay': 0.8, 'Vx': 4, 'Ax': 0.8, 'Cy': 0, 'Wli': 1850, 'Wsh': 850, 'Wsa': 350, 'Lz': 1.2, 'Ly': 1.5, 'Lx': 1, 'Nz': 10, 'Ny': 6, 'Nx': 10, 'bay_level': 0, 'tech': 0, 'strategy': 1, 'strategy_par_x': 3.7688600589365038, 'strategy_par_y': 1}
+
+
+
+Average task wait: 0.0
+Average task op time: 12.173831775700934
+Average task tot time: 20.186915887850468
+Th: 178.33333333333334
+Completeness: 1.0
+task done: 535.0
+Energy consumed: 1.2782576800127343 KWh
+Energy consumed per tasks: 2.3892666916125873 wh
+Working time: 6513.0
+Time per task: 18.243445692883896
+Area: 100.0
+Volume: 600.0
+Lifts: 5.0
+Shuttles: 5.0
+Sats: 5.0
+Lifts util: 0.010778443113772455 / 0.2787041302011362
+Shuttles util: 0.0015353907569476432 / 0.2787041302011362
+Sats util: 0.3494856440964225 / 0.2787041302011362
+Single cycle: 138.35135135135135 var: 30580.390065741412
+Double cycle: 7.6993318485523385 var: 781.3015808453331
+Single cycle energy: 15.062300901182446
+Double cycle energy: 0.2932078890933311
+Strat par: 3.7688600589365038
+Cost: 7.510312568208707
+
+
+
+
+tech 1  cost_f 1:
+{'rendiment': 0.9, 'Fr': 1.15, 'Cr': 0.02, 'Nsa': 1, 'Nsh': 1, 'Nli': 3, 'Vz': 1.2, 'Az': 0.7, 'Vy': 0.9, 'Ay': 0.8, 'Vx': 4, 'Ax': 0.8, 'Cy': 0, 'Wli': 1850, 'Wsh': 850, 'Wsa': 350, 'Lz': 1.2, 'Ly': 1.5, 'Lx': 1, 'Nz': 10, 'Ny': 8, 'Nx': 10, 'bay_level': 0, 'tech': 1, 'strategy': 1, 'strategy_par_x': 3.6338042104924795, 'strategy_par_y': 0}
+
+
+
+Average task wait: 0.0
+Average task op time: 19.521495327102805
+Average task tot time: 20.186915887850468
+Th: 178.33333333333334
+Completeness: 1.0
+task done: 535.0
+Energy consumed: 23.372153582738772 KWh
+Energy consumed per tasks: 43.68626837895097 wh
+Working time: 10444.0
+Time per task: 79.53107344632768
+Area: 100.0
+Volume: 800.0
+Lifts: 3.0
+Shuttles: 3.0
+Sats: 3.0
+Lifts util: 0.34118473126516025 / 0.5184156772628622
+Shuttles util: 0.0036703689518702925 / 0.7094663602706498
+Sats util: 0.36662198391420914 / 0.7094663602706498
+Single cycle: 43.281167108753316 var: 1982.5734649508543
+Double cycle: 70.43636363636364 var: 2349.61564738292
+Single cycle energy: 26.3079858513625
+Double cycle energy: 81.50245474549561
+Strat par: 10.0
+Cost: 7.3038305318448025
+
+
+
+
+tech 1  cost_f 0:
+{'rendiment': 0.9, 'Fr': 1.15, 'Cr': 0.02, 'Nsa': 1, 'Nsh': 2, 'Nli': 5, 'Vz': 1.2, 'Az': 0.7, 'Vy': 0.9, 'Ay': 0.8, 'Vx': 4, 'Ax': 0.8, 'Cy': 0, 'Wli': 1850, 'Wsh': 850, 'Wsa': 350, 'Lz': 1.2, 'Ly': 1.5, 'Lx': 1, 'Nz': 10, 'Ny': 5, 'Nx': 10, 'bay_level': 0, 'tech': 1, 'strategy': 1, 'strategy_par_x': 8.025729350772968, 'strategy_par_y': 1}
+
+
+
+Average task wait: 0.0
+Average task op time: 17.99626168224299
+Average task tot time: 20.186915887850468
+Th: 178.33333333333334
+Completeness: 1.0
+task done: 535.0
+Energy consumed: 1.17370216388382 KWh
+Energy consumed per tasks: 2.193835820343589 wh
+Working time: 9628.0
+Time per task: 43.91744840525328
+Area: 100.0
+Volume: 500.0
+Lifts: 5.0
+Shuttles: 10.0
+Sats: 10.0
+Lifts util: 0.20294972995429997 / 0.313855421686747
+Shuttles util: 0.000540091400083091 / 0.23981096800997093
+Sats util: 0.11680515164104693 / 0.23981096800997093
+Single cycle: 48.18055555555556 var: 7793.678819444446
+Double cycle: 26.023715415019762 var: 2954.252402005968
+Single cycle energy: 0.9839816095869217
+Double cycle energy: 1.5932249424167326
+Strat par: 8.025729350772968
+Cost: 15.964421717135721
+
+
+
+
+tech 2  cost_f 1:
+{'rendiment': 0.9, 'Fr': 1.15, 'Cr': 0.02, 'Nsa': 1, 'Nsh': 2, 'Nli': 3, 'Vz': 1.2, 'Az': 0.7, 'Vy': 0.9, 'Ay': 0.8, 'Vx': 4, 'Ax': 0.8, 'Cy': 0, 'Wli': 1850, 'Wsh': 850, 'Wsa': 350, 'Lz': 1.2, 'Ly': 1.5, 'Lx': 1, 'Nz': 10, 'Ny': 18, 'Nx': 10, 'bay_level': 0, 'tech': 2, 'strategy': 1, 'strategy_par_x': 9.198820562877785, 'strategy_par_y': 1}
+
+
+
+Average task wait: 0.0
+Average task op time: 19.977570093457945
+Average task tot time: 20.186915887850468
+Th: 178.33333333333334
+Completeness: 1.0
+task done: 535.0
+Energy consumed: 15.38478809717249 KWh
+Energy consumed per tasks: 28.756613265742974 wh
+Working time: 10688.0
+Time per task: 108.8409090909091
+Area: 100.0
+Volume: 1800.0
+Lifts: 3.0
+Shuttles: 6.0
+Sats: 6.0
+Lifts util: 0.4617639720558882 / 0.6293350798403193
+Shuttles util: 0.15586015469061876 / 0.6112150698602795
+Sats util: 0.1777070858283433 / 0.6584799151696606
+Single cycle: 20.03905160390516 var: 368.7962434520093
+Double cycle: 24.6 var: 387.87225806451613
+Single cycle energy: 13.288787558634885
+Double cycle energy: 18.19037101883237
+Strat par: 9.198820562877785
+Cost: 21.914851278072913
+
+
+
+
+tech 2  cost_f 0:
+{'rendiment': 0.9, 'Fr': 1.15, 'Cr': 0.02, 'Nsa': 1, 'Nsh': 2, 'Nli': 5, 'Vz': 1.2, 'Az': 0.7, 'Vy': 0.9, 'Ay': 0.8, 'Vx': 4, 'Ax': 0.8, 'Cy': 0, 'Wli': 1850, 'Wsh': 850, 'Wsa': 350, 'Lz': 1.2, 'Ly': 1.5, 'Lx': 1, 'Nz': 10, 'Ny': 8, 'Nx': 10, 'bay_level': 0, 'tech': 2, 'strategy': 1, 'strategy_par_x': 1.9739370305107562, 'strategy_par_y': 1}
+
+
+
+Average task wait: 0.0
+Average task op time: 19.813084112149532
+Average task tot time: 20.186915887850468
+Th: 178.33333333333334
+Completeness: 1.0
+task done: 535.0
+Energy consumed: 1.9739765668343112 KWh
+Energy consumed per tasks: 3.6896758258585254 wh
+Working time: 10600.0
+Time per task: 71.9623352165725
+Area: 100.0
+Volume: 800.0
+Lifts: 5.0
+Shuttles: 10.0
+Sats: 10.0
+Lifts util: 0.22973584905660377 / 0.33241509433962263
+Shuttles util: 0.09717924528301886 / 0.3146792452830189
+Sats util: 0.10514150943396226 / 0.3429905660377358
+Single cycle: 19.71137026239067 var: 1644.2723780057631
+Double cycle: 23.532994923857867 var: 352.7463732639336
+Single cycle energy: 1.6047242663576609
+Double cycle energy: 1.871877842913748
+Strat par: 1.9739370305107562
+Cost: 33.42220761777677
+
+
+
+

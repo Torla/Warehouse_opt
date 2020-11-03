@@ -36,13 +36,7 @@ class Opt:
         s = time()
         from Opt.Genetic import opt
         count = 0
-        for i in opt(opt_par, trace_par, fitness_par, c_par, 10000, 0.2, 0.1, 0, 0.3, 0.1, 0.8, processes):
-            # print("\n\nt: " + str(time() - s))
-            i.get_fitness()
-            print("fit: " + str(i.get_fitness()))
-            print(str(i.get_average_results()))
-            # res.append(i.get_fitness())
-            print(count)
+        for i in opt(opt_par, trace_par, fitness_par, c_par, 30, 0.2, 0.2, 0, 0.3, 0.1, 0.8, processes):
             count += 1
             if count > generations:
                 return OptParameter.map(i.opt_par, i), i.get_average_results()
@@ -165,6 +159,7 @@ class Solution(List):
         ret = 0
         try:
             results = self.res.get()
+            print("done")
         except Exception as err:
             return np.inf
         i = 0
@@ -176,11 +171,12 @@ class Solution(List):
                 i += 1
                 d.update(t.__dict__)
                 d.update(res.__dict__)
-                w = csv.DictWriter(open("results.csv", mode="a+"),
-                                   fieldnames=(list(d.keys())))
-                if os.stat("results.csv").st_size < 10:
-                    w.writeheader()
-                w.writerow(d)
+                with open("results.csv", mode="a+", newline='') as f:
+                    w = csv.DictWriter(f,
+                                       fieldnames=(list(d.keys())))
+                    if os.stat(f.name).st_size < 10:
+                        w.writeheader()
+                    w.writerow(d)
             for p in res.__dict__:
                 if isinstance(res.__dict__[p], int) or isinstance(res.__dict__[p], float):
                     ret += (res.__dict__[p] * self.fitness_par.__dict__[p]) / len(results)
@@ -206,9 +202,9 @@ class Solution(List):
                 i += 1
                 d.update(t.__dict__)
                 d.update(res.__dict__)
-                w = csv.DictWriter(open("results.csv", mode="a+"),
+                w = csv.DictWriter(open("results_old.csv", mode="a+"),
                                    fieldnames=(list(d.keys())))
-                if os.stat("results.csv").st_size < 10:
+                if os.stat("results_old.csv").st_size < 10:
                     w.writeheader()
                 w.writerow(d)
             for p in res.__dict__:
@@ -222,74 +218,33 @@ class Solution(List):
 
 if __name__ == '__main__':
     def test():
-        par = OptParameter(Nx=OptRange(1, 100), Ny=OptRange(1, 10), Nz=OptRange(1, 100),
-                           Lx=1, Ly=1.5, Lz=1.2, Cy=0,
-                           Ax=OptRange(0.1, 1.5), Vx=OptRange(0.1, 5.5), Ay=OptRange(0.1, 1.5), Vy=OptRange(0.1, 1.5),
-                           Az=OptRange(0.1, 1.5),
-                           Vz=OptRange(0, 2.5),
-                           Wli=1850, Wsh=850, Wsa=350,
-                           Cr=0.02, Fr=1.15, rendiment=0.9,
-                           Nli=OptRange(1, 10), Nsh=OptRange(1, 5), Nsa=OptRange(1, 5),
-                           # todo collega questi con le dimensioni Nz/2 Nx Ny
-                           bay_level=0,
-                           tech=2, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
-                           strat_par_y=OptRange(0, 1, decimal=True))
 
-        t_par = TraceParameter(sim_time=6000, types=np.repeat(0.1, 10), int_mean=50, start_fullness=0.4,
-                               # todo 0.40 0.60 0.80
-                               seed=[100, 200, 300])
-        f_par = FitnessParameter(completeness=-1000000000, cost=1, energy_consumed=1)
-        c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
-                                  satellite=35000, transelevator=40000,
-                                  scaffolding=30, energy_cost=0.0356 / 1000)
-        str(Opt.optimization(par, t_par, f_par, c_par, 100000, 4))
-
-
-    def graphs():
-        result = []
-        area = 800
-        for tech in range(0, 3):
-            result.append({})
-            for nz in range(20, 201, 30):
-                lifts = OptRange(1, 10) if tech == 2 else OptRange(math.ceil(nz / 6), math.ceil(nz / 6) + 10)
-                start = time()
-                par = OptParameter(Nx=1, Ny=OptRange(2, 10), Nz=nz,
+        for tech in [0, 1, 2]:
+            for cost_f in [1, 0]:
+                print(str(tech) + " " + str(cost_f))
+                par = OptParameter(Nx=OptRange(10, 50), Ny=OptRange(3, 20), Nz=OptRange(10, 50),
                                    Lx=1, Ly=1.5, Lz=1.2, Cy=0,
                                    Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
+                                   #Ax=0.2, Vx=4, Ay=0.2, Vy=0.9, Az=0.2, Vz=1.20,
                                    Wli=1850, Wsh=850, Wsa=350,
                                    Cr=0.02, Fr=1.15, rendiment=0.9,
-                                   Nli=lifts, Nsh=OptRange(1, 10), Nsa=OptRange(1, 10),
+                                   Nli=OptRange(1, 5), Nsh=OptRange(1, 3), Nsa=OptRange(1, 3),
                                    bay_level=0,
-                                   tech=tech, strat=1, strat_par_x=OptRange(0, 1, decimal=True),
-                                   strat_par_y=OptRange(0, 1, decimal=True))
+                                   tech=tech, strat=1, strat_par_x=OptRange(0, 10, decimal=True),
+                                   strat_par_y=OptRange(0, 1))
 
-                t_par = TraceParameter(sim_time=3600 * 3, types=[0.4, 0.3, 0.3], int_mean=25, start_fullness=0.5,
-                                       seed=[100, 200, 300])
-                f_par = FitnessParameter(task_tot_time=100, num_lifts=10, num_sats=1, num_shuttle=1)
-                par, res = Opt.optimization(par, t_par, f_par, 10, int(sys.argv[1]), 4)
-                result[tech][nz] = res
-                print(str(tech) + " " + str(nz) + " :\n" + str(result[tech][nz]))
-                print("time: " + str(time() - start))
-                print("\n")
+                t_par = TraceParameter(sim_time=3600 * 3, types=np.repeat(1/40, 40), int_mean=25, start_fullness=0.5,
+                                       seed=[1])
+                f_par = FitnessParameter(completeness=-1000000000, cost=cost_f, energy_consumed=1 - cost_f)
+                c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
+                                          satellite=35000, transelevator=40000,
+                                          scaffolding=30, energy_cost=0.0356 / 1000)
+                r1, r2 = Opt.optimization(par, t_par, f_par, c_par, 1000, 2)
 
-        with open("results.json", "w") as f:
-            f.write(jsonpickle.encode(result))
-        with open("results.json", "r") as f:
-            result = jsonpickle.loads(f.read())
-
-        c = "rgbyk"
-        for p in res.__dict__:
-            for i in range(0, len(result)):
-                lists = sorted(result[i].items(), key=lambda x: int(x[0]))
-                x, y = zip(*lists)  # unpack a l
-                # ist of pairs into two tuples
-                y = [a.__dict__[p] for a in y]
-                plt.plot(x, y, c[i], label="tech" + str(i))
-            plt.ylabel(p)
-            plt.xlabel('Nz')
-            plt.legend()
-            plt.savefig("output/" + str(p) + ".png", bbox_inches='tight')
-            plt.close()
+                with open("casi_studio_tanti_tipi.txt", "a+") as f:
+                    f.write(
+                        "tech " + str(tech) + "  cost_f " + str(cost_f) + ":\n" + str(r1.__dict__) + "\n\n\n\n" + str(
+                            r2) + "\n\n\n\n\n")
 
 
     start = time()

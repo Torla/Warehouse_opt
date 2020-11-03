@@ -48,8 +48,8 @@ class Monitor:
             self.lifts_util = 1000000000
             self.shut_util = 1000000000
             self.sat_util = 1000000000
-            self.single_CT = 1000000000
-            self.double_CT = 1000000000
+            self.single_CT = 0
+            self.double_CT = 0
             self.single_CT_V = 1000000000
             self.double_CT_V = 1000000000
             self.single_CT_E = 1000000000
