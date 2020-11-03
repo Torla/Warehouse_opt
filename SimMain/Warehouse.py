@@ -90,8 +90,8 @@ class Warehouse:
             channels = sorted(self.sim.find_res(lambda x: isinstance(x, Channel), free=False),
                               key=lambda x: w_dist(x.position, bay.position, parameter))
             while i < item_to_add:
-                task = Task(Item("Tipo" + str(
-                    np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
+                task = Task(Item(np.random.choice(a=[i for i in trace_parameter.types.keys()],
+                                                  p=[i for i in trace_parameter.types.values()])),
                             OrderType.DEPOSIT)
                 Strategy.bay = None
                 Strategy.strategy1_static = None
@@ -101,8 +101,8 @@ class Warehouse:
 
         else:
             while i < item_to_add:
-                task = Task(Item("Tipo" + str(
-                    np.random.choice([i for i in range(0, len(trace_parameter.types))], p=trace_parameter.types))),
+                task = Task(Item(
+                    np.random.choice(a=[i for i in trace_parameter.types.keys()], p=[i for i in trace_parameter.types.values()])),
                             OrderType.DEPOSIT)
                 Strategy.bay = None
                 Strategy.strategy1_static = None

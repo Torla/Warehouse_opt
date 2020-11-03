@@ -1,7 +1,7 @@
 class SimulationParameter:
     def __init__(self, Nx, Ny, Nz, Lx, Ly, Lz, Cy, Ax, Vx, Ay, Vy, Az, Vz, Wli, Wsh, Wsa, Cr, Fr, rendiment, Nli, Nsh,
                  Nsa, bay_level,
-                 tech, strat, strat_par_x, strat_par_y):
+                 tech, strat, strat_par_x, strat_par_y, adjacency=None):
         self.rendiment = rendiment
         self.Fr = Fr
         self.Cr = Cr
@@ -35,3 +35,4 @@ class SimulationParameter:
         self.strategy = strat
         self.strategy_par_x = strat_par_x
         self.strategy_par_y = strat_par_y
+        self.adjacency = adjacency

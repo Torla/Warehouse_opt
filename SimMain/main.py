@@ -5,6 +5,7 @@ import random
 import time
 
 import jsonpickle
+import pandas as pd
 from math import floor, sqrt, ceil
 import numpy as np
 
@@ -124,6 +125,27 @@ if __name__ == '__main__':
                 plt.close()
 
 
+    def adjacency():
+        d = {k.strip(): {row['antecedents']: row["lift"] for i, row in v.iterrows()} for k, v in
+             pd.read_csv("ad_rule.csv").groupby(by="consequents")}
+        gen = {k: 1 / len(d) for k in d.keys()}
+        par = SimulationParameter(Nx=20, Ny=5, Nz=20,
+                                  Lx=5, Ly=5, Lz=5, Cy=0,
+                                  Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
+                                  Wli=1850, Wsh=850, Wsa=350,
+                                  Cr=0.02, Fr=1.15, rendiment=0.9,
+                                  Nli=34, Nsh=4, Nsa=4,
+                                  bay_level=0,
+                                  tech=0, strat=2, strat_par_x=1, strat_par_y=1, adjacency=d)
+        t_par = TraceParameter(sim_time=360 * 3, types=gen, int_mean=25, start_fullness=0.5,
+                               seed=1023)
+        c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
+                                  satellite=35000, transelevator=40000,
+                                  scaffolding=30, energy_cost=0.0356 / 1000)
+        res = Test.test(parameter=par, trace_parameter=t_par, cost_par=c_par, log=True)
+        print(res)
+
+
     start_time = time.time()
-    graphs()
+    adjacency()
     print(time.time() - start_time)
