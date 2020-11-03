@@ -758,7 +758,7 @@ class Strategy:
                     lambda c: isinstance(c, Channel) and len(c.items) > 0 and c.items[0].item_type == con,
                     free=False)
                 if len(cha_pre) > 0:
-                    center_pos = np.random.choice(cha_pre)
+                    center_res = np.random.choice(cha_pre)
                     break
 
             min_dist = 1000000

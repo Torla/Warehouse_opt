@@ -48,16 +48,9 @@ def trace_generator(trace_par) -> {}:
 
         item_type = np.random.choice(a=[i for i in trace_par.types.keys()], p=[i for i in trace_par.types.values()])
 
-        if item_type not in warehouse or warehouse[item_type] < 1:
-            task = Task(Item(item_type), OrderType.DEPOSIT)
-            if item_type in warehouse:
-                warehouse[item_type] += 1
-            else:
-                warehouse[item_type] = 1
 
-        else:
-            task = Task(Item(item_type), OrderType.RETRIEVAL if np.random.randint(0, 1) else OrderType.RETRIEVAL)
-            warehouse[item_type] += 1 if task.order_type == OrderType.DEPOSIT else -1
+        task = Task(Item(item_type), OrderType.RETRIEVAL if np.random.randint(0, 1) else OrderType.RETRIEVAL)
+
         ret[time] = task
     return ret
 
