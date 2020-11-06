@@ -727,7 +727,7 @@ class Strategy:
 
     # nearest to Strategy.bay
 
-    strategy2_static = {}
+    strategy2_static = None
 
     @staticmethod
     def strategy2(task, sim, parameter) -> int:
@@ -754,6 +754,9 @@ class Strategy:
 
         if Strategy.bay is None:
             Strategy.bay = sim.find_res(lambda x: isinstance(x, Bay))[0]
+
+        if Strategy.strategy2_static is None:
+            Strategy.strategy2_static = {}
 
         if task.order_type == OrderType.DEPOSIT:
             # select valid channel

@@ -81,6 +81,10 @@ class Warehouse:
             item_to_add = trace_parameter.start_fullness
         i = 0
 
+        Strategy.bay = None
+        Strategy.strategy1_static = None
+        Strategy.strategy2_static = None
+
         if parameter.strategy == 1:
             def w_dist(x, y, par):
                 assert isinstance(par, SimulationParameter)
@@ -108,8 +112,6 @@ class Warehouse:
                     np.random.choice(a=[i for i in trace_parameter.types.keys()],
                                      p=[i for i in trace_parameter.types.values()])),
                     OrderType.DEPOSIT)
-                Strategy.bay = None
-                Strategy.strategy1_static = None
                 selection = Strategy.__dict__["strategy" + str(parameter.strategy)] \
                     .__func__(task, sim, parameter)
                 assert isinstance(selection, int)

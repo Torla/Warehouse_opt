@@ -141,7 +141,7 @@ if __name__ == '__main__':
                                   Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
                                   Wli=1850, Wsh=850, Wsa=350,
                                   Cr=0.02, Fr=1.15, rendiment=0.9,
-                                  Nli=4, Nsh=4, Nsa=4,
+                                  Nli=8, Nsh=4, Nsa=4,
                                   bay_level=0,
                                   tech=2, strat=2, strat_par_x=1, strat_par_y=100, adjacency=d)
         t_par = TraceParameter(sim_time=36000, types=gen, int_mean=402, start_fullness=0.7,
