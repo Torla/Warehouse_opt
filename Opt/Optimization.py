@@ -36,7 +36,7 @@ class Opt:
         s = time()
         from Opt.Genetic import opt
         count = 0
-        for i in opt(opt_par, trace_par, fitness_par, c_par, 30, 0.2, 0.2, 0, 0.3, 0.1, 0.8, processes):
+        for i in opt(opt_par, trace_par, fitness_par, c_par, 100, 0.2, 0.2, 0, 0.3, 0.1, 0.8, processes):
             count += 1
             if count > generations:
                 return OptParameter.map(i.opt_par, i), i.get_average_results()
@@ -220,12 +220,14 @@ if __name__ == '__main__':
     def test():
 
         for tech in [0, 1, 2]:
-            for cost_f in [1, 0]:
+            with open("cost_vs_energy_tech{tech}.csv".format(tech=tech), "w") as f:
+                f.write("par,cost,energy\n")
+            for cost_f in np.arange(0.7, 1.05, 0.05):
                 print(str(tech) + " " + str(cost_f))
                 par = OptParameter(Nx=OptRange(10, 50), Ny=OptRange(3, 20), Nz=OptRange(10, 50),
                                    Lx=1, Ly=1.5, Lz=1.2, Cy=0,
                                    Ax=0.8, Vx=4, Ay=0.8, Vy=0.9, Az=0.7, Vz=1.20,
-                                   #Ax=0.2, Vx=4, Ay=0.2, Vy=0.9, Az=0.2, Vz=1.20,
+                                   # Ax=0.2, Vx=4, Ay=0.2, Vy=0.9, Az=0.2, Vz=1.20,
                                    Wli=1850, Wsh=850, Wsa=350,
                                    Cr=0.02, Fr=1.15, rendiment=0.9,
                                    Nli=OptRange(1, 5), Nsh=OptRange(1, 3), Nsa=OptRange(1, 3),
@@ -233,18 +235,20 @@ if __name__ == '__main__':
                                    tech=tech, strat=1, strat_par_x=OptRange(0, 10, decimal=True),
                                    strat_par_y=OptRange(0, 1))
 
-                t_par = TraceParameter(sim_time=3600 * 3, types=np.repeat(1/40, 40), int_mean=25, start_fullness=0.5,
+                t_par = TraceParameter(sim_time=1000, types=np.repeat(1 / 10, 10), int_mean=25, start_fullness=0.5,
                                        seed=[1])
-                f_par = FitnessParameter(completeness=-1000000000, cost=cost_f, energy_consumed=1 - cost_f)
+                f_par = FitnessParameter(completeness=-1000000000, cost=cost_f, energy_consumed=(1 - cost_f)/1000)
                 c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
                                           satellite=35000, transelevator=40000,
                                           scaffolding=30, energy_cost=0.0356 / 1000)
-                r1, r2 = Opt.optimization(par, t_par, f_par, c_par, 1000, 2)
+                r1, r2 = Opt.optimization(par, t_par, f_par, c_par, 10000, 2)
 
-                with open("casi_studio_tanti_tipi.txt", "a+") as f:
+                with open("cost_vs_energy_tech{tech}.csv".format(tech=tech), "a+") as f:
+                    # f.write(
+                    #    "tech " + str(tech) + "  cost_f " + str(cost_f) + ":\n" + str(r1.__dict__) + "\n\n\n\n" + str(
+                    #       r2) + "\n\n\n\n\n")
                     f.write(
-                        "tech " + str(tech) + "  cost_f " + str(cost_f) + ":\n" + str(r1.__dict__) + "\n\n\n\n" + str(
-                            r2) + "\n\n\n\n\n")
+                        "{par},{cost},{energy}\n".format(par=cost_f, cost=r2.cost, energy=r2.energy_consumed))
 
 
     start = time()

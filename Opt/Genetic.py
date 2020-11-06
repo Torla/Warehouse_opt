@@ -1,6 +1,7 @@
 import random
 
 import numpy
+from math import floor
 from numpy import average
 
 import Opt.Optimization
@@ -15,6 +16,7 @@ def opt(opt_par, t_par, f_par, c_par, pop_size, pos_swap, mut, mut_change, mut_p
         def __init__(self, opt_par, t_par, c_par, fitness_par, mut, array=None) -> None:
             self.mut = mut
             super().__init__(opt_par, t_par, c_par, fitness_par, array)
+
             if array is not None:
                 self.mutation()
 
@@ -40,9 +42,25 @@ def opt(opt_par, t_par, f_par, c_par, pop_size, pos_swap, mut, mut_change, mut_p
             return Chromosome(opt_par, t_par, f_par, c1.mutation, child)
 
     class Population:
-        def __init__(self, opt_par, t_par, f_par, mut, size, pop_swap):
+        def __init__(self, opt_par: Opt.Optimization.OptParameter, t_par, f_par, mut, size, pop_swap):
             self.pop_swap = pop_swap
-            self.pop = [Chromosome(opt_par, t_par, f_par, c_par, mut) for i in range(0, size)]
+            n = numpy.math.floor(numpy.log(size) / numpy.log(opt_par.variable_num()))
+            arrs = []
+            arr = [i for i in range(0, opt_par.variable_num())]
+
+            def random_gen(arr, depth):
+                if depth == opt_par.variable_num():
+                    arrs.append(arr.copy())
+                    return
+                for i in numpy.arange(0, 1 + 1 / n, 1 / n):
+                    arr[depth] = i
+                    random_gen(arr, depth + 1)
+
+            random_gen(arr, 0)
+            c = [i for i in numpy.random.choice(numpy.arange(0, len(arrs)), size=size, replace=False)]
+            self.pop = []
+            for i in c:
+                self.pop.append(Chromosome(opt_par, t_par, f_par, c_par, mut, array=arrs[i]))
 
         def generation(self):
 
