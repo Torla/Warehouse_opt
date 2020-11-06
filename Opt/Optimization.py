@@ -245,7 +245,7 @@ if __name__ == '__main__':
                                           scaffolding=30, energy_cost=0.0356 / 1000)
                 r1, r2 = Opt.optimization(par, t_par, f_par, c_par, 10000, 2)
 
-                with open("cost_vs_energy_tech{tech}.csv".format(tech=tech), "a+") as f:
+                with open("casi_studio/ost_vs_energy_tech{tech}.csv".format(tech=tech), "a+") as f:
                     # f.write(
                     #    "tech " + str(tech) + "  cost_f " + str(cost_f) + ":\n" + str(r1.__dict__) + "\n\n\n\n" + str(
                     #       r2) + "\n\n\n\n\n")
