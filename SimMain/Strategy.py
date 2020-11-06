@@ -726,6 +726,9 @@ class Strategy:
         return ret.id
 
     # nearest to Strategy.bay
+
+    strategy2_static = {}
+
     @staticmethod
     def strategy2(task, sim, parameter) -> int:
         assert isinstance(task, Task)
@@ -737,10 +740,15 @@ class Strategy:
             return abs(x.level - y.level) * par.strategy_par_y * par.Ly + abs(
                 x.x - y.x) * par.strategy_par_x * par.Lx
 
-        def dist_static(channel):
-            return sorted([(c, w_dist(c.position, channel.position, parameter)) for c in
-                           sim.find_res(lambda x: isinstance(x, Channel), free=False)],
-                          key=lambda x: x[1])
+        def dist(channel):
+            if channel in Strategy.strategy2_static:
+                return Strategy.strategy2_static[channel]
+            else:
+                a = sorted([(c, w_dist(c.position, channel.position, parameter)) for c in
+                            sim.find_res(lambda x: isinstance(x, Channel), free=False)],
+                           key=lambda x: x[1])
+                Strategy.strategy2_static[channel] = a
+                return a
 
         channels = []
 
@@ -763,7 +771,7 @@ class Strategy:
                         break
 
             min_dist = 1000000
-            for x in dist_static(center_res):
+            for x in dist(center_res):
                 if x[1] > min_dist:
                     break
                 if sim.is_free(x[0]) and len(x[0].items) < x[0].capacity and (

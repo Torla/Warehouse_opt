@@ -161,6 +161,7 @@ class Solution(List):
             results = self.res.get()
             print("done")
         except Exception as err:
+            print('\033[91m' + str(err) +'\033[0m')
             return np.inf
         i = 0
         for res in results:
@@ -235,9 +236,10 @@ if __name__ == '__main__':
                                    tech=tech, strat=1, strat_par_x=OptRange(0, 10, decimal=True),
                                    strat_par_y=OptRange(0, 1))
 
-                t_par = TraceParameter(sim_time=1000, types=np.repeat(1 / 10, 10), int_mean=25, start_fullness=0.5,
+                t_par = TraceParameter(sim_time=1000, types={"Type" + str(i): (1 / 10) for i in range(0, 10)},
+                                       int_mean=25, start_fullness=0.5,
                                        seed=[1])
-                f_par = FitnessParameter(completeness=-1000000000, cost=cost_f, energy_consumed=(1 - cost_f)/1000)
+                f_par = FitnessParameter(completeness=-1000000000, cost=cost_f, energy_consumed=(1 - cost_f) / 1000)
                 c_par = Monitor.CostParam(intended_time=3.154e+8, lift=20000, shuttle=50000, shuttle_fork=35000,
                                           satellite=35000, transelevator=40000,
                                           scaffolding=30, energy_cost=0.0356 / 1000)
