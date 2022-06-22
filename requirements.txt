@@ -2,7 +2,7 @@ pca
 cycler==0.10.0
 jsonpickle
 matplotlib
-numpy==1.18.2
+numpy==1.22.0
 overrides==2.8.0
 pandas==1.0.3
 pyparsing==2.4.7
